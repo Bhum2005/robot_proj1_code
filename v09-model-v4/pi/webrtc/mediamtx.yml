@@ -1,0 +1,45 @@
+# MediaMTX สำหรับหุ่น — ส่งวิดีโอ WebRTC ให้หน้าคุมหุ่น (ทดสอบกับ MediaMTX v1.9.3)
+#
+#   server.py ส่ง H.264 เข้ามาทาง RTSP (ในเครื่องเท่านั้น)
+#   เบราว์เซอร์ขอเปิดวิดีโอผ่าน /whep ของ server.py (ต้องผ่านรหัสก่อน)
+#   -> server.py ส่งต่อมาที่นี่ (ในเครื่อง) -> วิดีโอวิ่ง UDP 8189 ตรงถึงเบราว์เซอร์
+#
+# ★ ความปลอดภัย: ทุกพอร์ตที่ "สั่งงาน" ได้ ฟังเฉพาะ 127.0.0.1
+#   เปิดออกข้างนอกแค่ 8189 ซึ่งเป็นท่อวิดีโอ ใช้ได้เฉพาะสายที่เจรจาผ่าน server.py แล้ว
+
+logLevel: warn
+
+authMethod: internal
+authInternalUsers:
+  # ส่งและอ่านวิดีโอได้เฉพาะจากในเครื่อง (server.py)
+  - user: any
+    pass:
+    ips: ['127.0.0.1', '::1']
+    permissions:
+      - action: publish
+      - action: read
+
+api: no
+metrics: no
+pprof: no
+playback: no
+rtmp: no
+hls: no
+srt: no
+
+rtsp: yes
+protocols: [tcp]
+rtspAddress: 127.0.0.1:8554
+
+webrtc: yes
+webrtcAddress: 127.0.0.1:8889
+# ท่อวิดีโอจริง — UDP เป็นหลัก ส่วน TCP สำรองไว้เผื่อเครือข่ายที่บล็อก UDP
+webrtcLocalUDPAddress: :8189
+webrtcLocalTCPAddress: :8189
+# บอกเบราว์เซอร์ทุก IP ของ Pi (วง hotspot + Tailscale 100.x) ให้มันเลือกทางที่ไปถึงเอง
+webrtcIPsFromInterfaces: yes
+webrtcIPsFromInterfacesList: []
+
+paths:
+  robot:
+    source: publisher
