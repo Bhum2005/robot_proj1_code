@@ -1,0 +1,25 @@
+[Unit]
+Description=ระบบจดมิเตอร์หอพัก
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=bhum
+WorkingDirectory=/home/bhum/meterhub-app
+Environment=HUB_TOKEN=robot-push-change-me
+ExecStart=/usr/bin/python3 /home/bhum/meterhub-app/hub.py \
+    --port 8080 \
+    --dir /home/bhum/meterhub
+Restart=always
+RestartSec=5
+
+# กันไว้เผื่อถูกเจาะ — โปรแกรมนี้ต้องเขียนแค่โฟลเดอร์ข้อมูลของตัวเอง
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=/home/bhum/meterhub
+
+[Install]
+WantedBy=multi-user.target

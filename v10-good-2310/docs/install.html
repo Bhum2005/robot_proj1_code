@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="th"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>ติดตั้งระบบมิเตอร์หอพัก</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#E9EAE4; --card:#FFFFFF; --ink:#15191C; --dim:#6B7076;
+  --line:#D3D5CC; --ubuntu:#17627F; --pi:#A8325B; --esp:#A8560C;
+  --ok:#2E7D4F; --warn:#9B2C2C;
+  --f:"IBM Plex Sans Thai","Noto Sans Thai",system-ui,sans-serif;
+  --m:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root{
+  --paper:#121417; --card:#1A1D21; --ink:#E7E8E3; --dim:#8E949A;
+  --line:#2A2E33; --ubuntu:#5FB2CE; --pi:#E08AA8; --esp:#E0963F;
+  --ok:#6BCB92; --warn:#E2756B;}}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--paper);color:var(--ink);font-family:var(--f);
+  line-height:1.62;-webkit-text-size-adjust:100%}
+.wrap{max-width:780px;margin:0 auto;padding:0 16px 80px}
+
+header{padding:30px 0 18px;border-bottom:2px solid var(--ink)}
+h1{font-size:clamp(23px,5.5vw,33px);margin:0 0 8px;font-weight:700;
+  letter-spacing:-.02em;line-height:1.15}
+.lede{color:var(--dim);font-size:15px;margin:0;max-width:60ch}
+
+nav{position:sticky;top:0;z-index:5;background:var(--paper);
+  padding:11px 0;border-bottom:1px solid var(--line);
+  display:flex;gap:6px;overflow-x:auto}
+nav a{flex:0 0 auto;text-decoration:none;font-size:13px;font-weight:500;
+  padding:6px 12px;border-radius:999px;border:1px solid var(--line);
+  color:var(--ink);background:var(--card);white-space:nowrap}
+nav a.u{border-color:var(--ubuntu);color:var(--ubuntu)}
+nav a.p{border-color:var(--pi);color:var(--pi)}
+nav a.e{border-color:var(--esp);color:var(--esp)}
+
+section{margin-top:40px;scroll-margin-top:62px}
+.mach{display:flex;align-items:baseline;gap:11px;margin:0 0 6px}
+.mach h2{font-size:clamp(19px,4vw,25px);margin:0;font-weight:700;
+  letter-spacing:-.01em}
+.tag{font-size:11.5px;font-family:var(--m);padding:3px 9px;border-radius:4px;
+  color:var(--card);white-space:nowrap}
+.u .tag{background:var(--ubuntu)} .p .tag{background:var(--pi)}
+.e .tag{background:var(--esp)}
+.u h2{color:var(--ubuntu)} .p h2{color:var(--pi)} .e h2{color:var(--esp)}
+.what{color:var(--dim);font-size:14.5px;margin:0 0 20px}
+
+ol.steps{list-style:none;counter-reset:s;margin:0;padding:0}
+ol.steps>li{counter-increment:s;position:relative;padding:0 0 4px 40px;
+  margin:0 0 22px}
+ol.steps>li::before{content:counter(s);position:absolute;left:0;top:1px;
+  width:27px;height:27px;border-radius:50%;display:grid;place-items:center;
+  font-size:13px;font-weight:600;font-family:var(--m);
+  background:var(--card);border:1.5px solid currentColor}
+.u ol.steps>li::before{color:var(--ubuntu)}
+.p ol.steps>li::before{color:var(--pi)}
+.e ol.steps>li::before{color:var(--esp)}
+ol.steps h3{font-size:16px;margin:2px 0 6px;font-weight:600}
+ol.steps p{margin:0 0 9px;font-size:14.5px}
+
+pre{position:relative;background:var(--card);border:1px solid var(--line);
+  border-radius:9px;padding:13px 46px 13px 13px;overflow-x:auto;
+  font-family:var(--m);font-size:13px;line-height:1.65;margin:0 0 10px}
+code{font-family:var(--m);font-size:.92em;background:var(--card);
+  border:1px solid var(--line);border-radius:4px;padding:1px 5px}
+pre code{border:0;padding:0;background:none;font-size:inherit}
+.cp{position:absolute;top:7px;right:7px;font-size:11px;font-family:var(--f);
+  padding:4px 9px;border-radius:6px;border:1px solid var(--line);
+  background:var(--paper);color:var(--dim);cursor:pointer}
+.cp:hover{color:var(--ink)} .cp.done{color:var(--ok);border-color:var(--ok)}
+
+.note{border-left:3px solid var(--line);padding:2px 0 2px 13px;margin:0 0 10px;
+  font-size:14px;color:var(--dim)}
+.note b{color:var(--ink)}
+.warn{border-left-color:var(--warn)}
+.warn b{color:var(--warn)}
+
+table{width:100%;border-collapse:collapse;font-size:14px;margin:0 0 10px}
+th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);
+  vertical-align:top}
+th{font-size:12.5px;color:var(--dim);font-weight:500}
+
+.check{list-style:none;margin:0;padding:0}
+.check li{display:flex;gap:11px;align-items:flex-start;padding:10px 0;
+  border-bottom:1px solid var(--line);font-size:14.5px}
+.check input{width:19px;height:19px;margin-top:2px;flex:0 0 auto;
+  accent-color:var(--ok)}
+.check li.done{color:var(--dim);text-decoration:line-through}
+
+.keep{background:var(--card);border:1px solid var(--line);border-radius:10px;
+  padding:15px;margin:0 0 10px}
+.keep h3{margin:0 0 10px;font-size:15px}
+.keep div{display:flex;gap:10px;align-items:center;margin:0 0 9px;
+  flex-wrap:wrap}
+.keep label{flex:0 0 150px;font-size:13px;color:var(--dim)}
+.keep input{flex:1 1 180px;padding:8px 10px;border:1px solid var(--line);
+  border-radius:7px;background:var(--paper);color:var(--ink);
+  font-family:var(--m);font-size:13px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid var(--line);
+  color:var(--dim);font-size:13px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style></head><body>
+<div class="wrap">
+
+<header>
+  <h1>ติดตั้งระบบมิเตอร์หอพัก ตั้งแต่ศูนย์</h1>
+  <p class="lede">สามเครื่อง: Ubuntu เก็บข้อมูลและเป็นเว็บ · Raspberry Pi คุมหุ่นและถ่ายรูป ·
+     ESP32 ขับมอเตอร์ ทำตามลำดับจากบนลงล่าง ใช้เวลาประมาณหนึ่งชั่วโมงครึ่ง</p>
+</header>
+
+<nav>
+  <a href="#prep">เตรียม</a>
+  <a class="u" href="#ubuntu">Ubuntu</a>
+  <a class="p" href="#pi">Pi</a>
+  <a class="e" href="#esp">ESP32</a>
+  <a href="#test">ทดสอบ</a>
+  <a href="#trouble">แก้ปัญหา</a>
+</nav>
+
+<section id="prep">
+  <div class="mach"><h2>ก่อนเริ่ม</h2></div>
+  <p class="what">ตรวจของให้ครบก่อน จะได้ไม่ต้องหยุดกลางทาง</p>
+
+  <table>
+    <tr><th>เครื่อง</th><th>ไฟล์ที่ต้องมี</th><th>หน้าที่</th></tr>
+    <tr><td><b>Ubuntu</b><br><span style="color:var(--dim);font-size:13px">เครื่องที่เปิดตลอด</span></td>
+      <td><code>hub.py</code> <code>pages.py</code><br><code>meterhub.service</code></td>
+      <td>เว็บลูกบ้าน เว็บเจ้าของหอ เก็บรูปทั้งหมด</td></tr>
+    <tr><td><b>Raspberry Pi 5</b></td>
+      <td><code>server.py</code> <code>push.py</code><br><code>robot-server.service</code> <code>robot-push.service</code></td>
+      <td>คุมหุ่น กล้อง จอย ส่งรูปขึ้น Ubuntu</td></tr>
+    <tr><td><b>ESP32-S3</b></td>
+      <td><code>main.cpp</code></td>
+      <td>มอเตอร์ เซอร์โว แปรงกวาด</td></tr>
+  </table>
+
+  <p class="note"><b>ลำดับสำคัญ</b> ทำ Ubuntu ให้เสร็จก่อนเสมอ เพราะตอนตั้งค่า Pi
+    ต้องกรอก IP และโทเคนของ Ubuntu ลงไป ถ้าทำ Pi ก่อนจะต้องย้อนกลับมาแก้</p>
+
+  <p class="note"><b>สองเครื่องต้องอยู่วง WiFi เดียวกัน</b> Ubuntu กับ Pi ส่งรูปกันในวง
+    ส่วน ESP32 ไม่ต่อเน็ตเลย ต่อสาย USB เข้า Pi อย่างเดียว</p>
+
+  <div class="keep">
+    <h3>จดค่าพวกนี้ไว้ จะใช้ซ้ำหลายที่</h3>
+    <div><label>ที่อยู่ Tailscale ของ Ubuntu</label><input id="k1" placeholder="100.x.x.x — ได้จากขั้นที่ 5"></div>
+    <div><label>ที่อยู่ Tailscale ของ Pi</label><input id="k6" placeholder="100.x.x.x — ได้จากขั้นที่ 2 ของ Pi"></div>
+    <div><label>โทเคนส่งรูป</label><input id="k2" placeholder="ได้จากขั้นที่ 2"></div>
+    <div><label>รหัสเจ้าของหอ</label><input id="k3" placeholder="ตั้งเองในขั้นที่ 3"></div>
+    <div><label>รหัสหน้าคุมหุ่น</label><input id="k4" placeholder="ตั้งเองในขั้นที่ 7"></div>
+    <div><label>ทางเข้าเจ้าของหอ</label><input id="k5" placeholder="/ทางลับ-ตั้งเอง"></div>
+    <p class="note" style="margin:4px 0 0">ช่องพวกนี้ช่วยกันลืมระหว่างทำ
+      ปิดหน้าแล้วข้อมูลหาย จดใส่กระดาษด้วย</p>
+  </div>
+</section>
+
+<section id="ubuntu" class="u">
+  <div class="mach"><span class="tag">เครื่องที่ 1</span><h2>Ubuntu</h2></div>
+  <p class="what">เครื่องนี้เก็บรูปและเลขมิเตอร์ทั้งหมด และเป็นเว็บที่ทั้งลูกบ้านและเจ้าของหอเข้า
+    ต้องเปิดตลอดเวลา ถ้าเป็นโน้ตบุ๊กต้องเสียบไฟทิ้งไว้</p>
+
+  <ol class="steps">
+    <li>
+      <h3>วางไฟล์และลงของที่ต้องใช้</h3>
+      <p><code>hub.py</code> กับ <code>pages.py</code> ต้องอยู่โฟลเดอร์เดียวกัน
+         ไม่งั้นจะขึ้น <code>ModuleNotFoundError: pages</code></p>
+      <pre><code>mkdir -p ~/meterhub-app
+cd ~/meterhub-app
+# คัดลอก hub.py และ pages.py มาไว้ที่นี่
+sudo apt update
+sudo apt install -y python3-pil</code></pre>
+    </li>
+
+    <li>
+      <h3>สุ่มโทเคนสำหรับให้หุ่นส่งรูป</h3>
+      <p>เป็นคนละตัวกับรหัสเข้าเว็บโดยตั้งใจ ถ้าหุ่นหายให้เปลี่ยนแค่โทเคน
+         ไม่ต้องเปลี่ยนรหัสที่แจกลูกบ้านไปแล้ว</p>
+      <pre><code>openssl rand -hex 16</code></pre>
+      <p class="note">จดค่าที่ได้ใส่ช่อง <b>โทเคนส่งรูป</b> ข้างบน จะต้องใช้อีกสองที่</p>
+    </li>
+
+    <li>
+      <h3>ตั้งรหัสเจ้าของหอ</h3>
+      <p>อย่างน้อย 12 ตัว และไม่ซ้ำกับรหัสที่ใช้ที่อื่น เพราะรหัสนี้เปิดหน้าคุมหุ่นได้ด้วย</p>
+      <pre><code>python3 hub.py --dir ~/meterhub --owner-pw รหัสที่ตั้งเอง</code></pre>
+      <p class="note">ถ้าไม่ใส่ <code>--owner-pw</code> ตอนเปิดครั้งแรก
+        ระบบจะสุ่มรหัสมาให้แล้วพิมพ์บนจอครั้งเดียว</p>
+    </li>
+
+    <li>
+      <h3>ลองรันดูก่อน</h3>
+      <pre><code>HUB_TOKEN=โทเคนที่สุ่มมา python3 hub.py \
+  --port 8080 \
+  --dir ~/meterhub \
+  --owner-path /ทางลับ-ตั้งเอง</code></pre>
+      <p>มันจะพิมพ์ที่อยู่ออกมาสามบรรทัด เปิดอันที่เป็นเว็บเจ้าของหอในเบราว์เซอร์
+         ล็อกอินด้วยรหัสจากขั้นที่ 3 ลองเพิ่มห้องทดสอบสักห้อง แล้วกด Ctrl+C</p>
+      <p class="note"><b><code>--owner-path</code></b> คือทางเข้าของเจ้าของหอ
+        ตั้งให้เดายากเพราะเว็บจะอยู่บนอินเทอร์เน็ตจริง หน้าลูกบ้านไม่มีอะไรบอกใบ้ทางเข้านี้เลย</p>
+    </li>
+
+    <li>
+      <h3>ติดตั้ง Tailscale แล้วจดที่อยู่ถาวร</h3>
+      <p>ทำข้อนี้แทนการจอง IP ที่เราเตอร์ เพราะถ้าใช้ WiFi ของมหาลัยหรือหอ
+         เราเข้าหน้าเราเตอร์ไม่ได้ และ IP จะเปลี่ยนเรื่อย ๆ</p>
+      <pre><code>curl -fsSL https://tailscale.com/install.sh | sh
+sudo tailscale up
+sudo tailscale set --operator=$USER
+tailscale status</code></pre>
+      <p>คำสั่งที่สองจะพ่นลิงก์มา เปิดแล้วล็อกอินด้วย Google กดอนุญาต
+         จากนั้น <code>tailscale status</code> จะโชว์เลขขึ้นต้นด้วย
+         <code>100.</code> นั่นคือที่อยู่ถาวรของเครื่องนี้
+         จดใส่ช่อง <b>ที่อยู่ Tailscale ของ Ubuntu</b> ข้างบน</p>
+      <p class="note"><b>ทำไมถึงดีกว่าจอง IP</b> เลข <code>100.x.x.x</code>
+        ติดกับเครื่อง ไม่ได้ติดกับวง WiFi ย้ายไปเกาะเน็ตที่ไหนก็ยังส่งถึงกัน
+        และถ้า WiFi ที่ใช้กันไม่ให้เครื่องในวงคุยกันเอง (เจอบ่อยในหอและมหาลัย)
+        Tailscale จะอ้อมให้เอง ซึ่งการส่งรูปในวงธรรมดาทำไม่ได้</p>
+    </li>
+
+    <li>
+      <h3>ตั้งไม่ให้เครื่องหลับ</h3>
+      <p>ข้ามได้ถ้าเป็นเครื่องตั้งโต๊ะ แต่โน้ตบุ๊กต้องทำ ไม่งั้นปิดฝาแล้วเว็บดับทั้งหอ</p>
+      <pre><code>sudo systemctl mask sleep.target suspend.target hibernate.target</code></pre>
+    </li>
+
+    <li>
+      <h3>ให้รันเองตลอด</h3>
+      <p class="note warn"><b>ข้ามข้อนี้ไปก่อนถ้ายังไม่ได้ลง Tailscale บน Pi</b>
+        บรรทัด <code>--robot</code> ต้องใส่ที่อยู่ Tailscale ของ Pi
+        กลับมาทำข้อนี้หลังทำ Pi ขั้นที่ 2 เสร็จ</p>
+      <pre><code>sudo cp meterhub.service /etc/systemd/system/
+sudo nano /etc/systemd/system/meterhub.service</code></pre>
+      <p>ในไฟล์ต้องแก้ห้าจุด</p>
+      <table>
+        <tr><th>บรรทัด</th><th>แก้เป็น</th></tr>
+        <tr><td><code>User=</code></td><td>ชื่อผู้ใช้จริงบนเครื่อง</td></tr>
+        <tr><td><code>WorkingDirectory=</code></td><td>พาธเต็มของ <code>~/meterhub-app</code></td></tr>
+        <tr><td><code>HUB_TOKEN=</code></td><td>โทเคนจากขั้นที่ 2</td></tr>
+        <tr><td><code>ExecStart</code></td><td>เติม <code>--owner-path</code> และ <code>--robot http://&lt;ที่อยู่ Tailscale ของ Pi&gt;:9000</code></td></tr>
+        <tr><td>เพิ่มบรรทัด</td><td><code>--robot-pass</code> รหัสหน้าคุมหุ่นที่จะตั้งในขั้นที่ 7 ของ Pi</td></tr>
+      </table>
+      <pre><code>sudo systemctl daemon-reload
+sudo systemctl enable --now meterhub
+systemctl status meterhub</code></pre>
+    </li>
+
+    <li>
+      <h3>เปิด MagicDNS และใบรับรอง HTTPS</h3>
+      <p>สองอันนี้ Funnel บังคับต้องมี เปิดในหน้าเว็บ Tailscale แท็บ <b>DNS</b></p>
+      <p class="note">เปิด <b>MagicDNS</b> และ <b>HTTPS Certificates</b>
+        ชื่อ tailnet จะอยู่ในหน้านี้ด้วย หน้าตาประมาณ <code>tail1a2b3.ts.net</code></p>
+    </li>
+
+    <li>
+      <h3>เปิด Funnel</h3>
+      <pre><code>tailscale funnel 8080</code></pre>
+      <p>ครั้งแรกจะยังไม่ทำงาน แต่พ่นลิงก์มาให้กดอนุญาตก่อน กดแล้วสั่งซ้ำอีกที
+         จะได้ลิงก์หน้าตาประมาณ <code>https://ชื่อเครื่อง.tail1a2b3.ts.net</code></p>
+      <p>ลองเปิดจากมือถือที่<b>ปิด WiFi</b> ถ้าขึ้นหน้าล็อกอินลูกบ้านแปลว่าใช้ได้ กด Ctrl+C
+         แล้วสั่งให้รันค้าง</p>
+      <pre><code>sudo tailscale funnel --bg 8080
+tailscale funnel status</code></pre>
+    </li>
+
+    <li>
+      <h3>ทดสอบว่ารอดจากการรีบูต</h3>
+      <p>ข้อนี้คนข้ามบ่อยที่สุด แล้วมารู้ตอนไฟบ้านดับว่าระบบไม่กลับมาเอง</p>
+      <pre><code>sudo reboot</code></pre>
+      <p>พอเครื่องกลับมา เปิดลิงก์จากมือถือที่ปิด WiFi อีกครั้ง ต้องขึ้นหน้าล็อกอินเหมือนเดิม</p>
+    </li>
+  </ol>
+</section>
+
+<section id="pi" class="p">
+  <div class="mach"><span class="tag">เครื่องที่ 2</span><h2>Raspberry Pi 5</h2></div>
+  <p class="what">เครื่องนี้อยู่บนหุ่น คุมมอเตอร์ผ่าน ESP32 ถ่ายรูปมิเตอร์
+    แล้วส่งขึ้น Ubuntu ทุก 20 วินาที</p>
+
+  <ol class="steps">
+    <li>
+      <h3>เช็คว่าคุยกับ Ubuntu ได้</h3>
+      <pre><code>ping -c 3 192.168.1.50</code></pre>
+      <p class="note warn"><b>ถ้า ping ไม่ผ่าน</b> หยุดตรงนี้ก่อน
+        ข้อต่อ ๆ ไปทำไปก็ไม่มีประโยชน์ ตรวจว่า Pi เกาะ WiFi วงเดียวกันอยู่จริง</p>
+    </li>
+
+    <li>
+      <h3>ลงของที่ต้องใช้</h3>
+      <pre><code>sudo apt update
+sudo apt install -y python3-serial python3-evdev python3-pil</code></pre>
+      <p><code>python3-evdev</code> คือตัวที่ทำให้จอยใช้ได้
+         ถ้าไม่ลง หุ่นยังคุมผ่านเว็บได้แต่จอยจะไม่ทำงาน</p>
+    </li>
+
+    <li>
+      <h3>วางไฟล์</h3>
+      <pre><code>mkdir -p ~/server
+cd ~/server
+# คัดลอก server.py (ตัวใหม่) และ push.py มาไว้ที่นี่
+mkdir -p ~/robot_photos</code></pre>
+      <p class="note"><b>server.py ต้องเป็นตัวใหม่</b> ตัวที่มีกล่องถามเลขห้องตอนกดถ่าย
+        และหยุดฉุกเฉิน ZL+ZR ถ้าใช้ตัวเก่าจะไม่มีสองอย่างนี้</p>
+    </li>
+
+    <li>
+      <h3>ลองส่งรูปรอบเดียว</h3>
+      <pre><code>python3 push.py \
+  --to http://192.168.1.50:8080 \
+  --token โทเคนเดียวกับ Ubuntu \
+  --once</code></pre>
+      <p>ถ้ายังไม่เคยถ่ายรูปเลยจะไม่มีอะไรส่ง ก็ถือว่าผ่าน ขอแค่ไม่ขึ้นข้อความแดง</p>
+      <table>
+        <tr><th>ถ้าขึ้นแบบนี้</th><th>แปลว่า</th></tr>
+        <tr><td><code>คลังปฏิเสธ (403)</code></td><td>โทเคนสองฝั่งไม่ตรงกัน</td></tr>
+        <tr><td><code>ยังต่อคลังไม่ได้</code></td><td>IP ผิด หรือ hub ไม่ได้รันอยู่</td></tr>
+      </table>
+    </li>
+
+    <li>
+      <h3>ตั้งรหัสหน้าคุมหุ่น</h3>
+      <p>รหัสนี้ต้องตรงกับ <code>--robot-pass</code> ที่ตั้งไว้ฝั่ง Ubuntu
+         ไม่งั้นกดปุ่มคุมหุ่นแล้วจะเปิดไม่ขึ้น จดใส่ช่อง <b>รหัสหน้าคุมหุ่น</b> ข้างบน</p>
+    </li>
+
+    <li>
+      <h3>ให้ทั้งสองตัวรันเอง</h3>
+      <pre><code>sudo cp robot-server.service /etc/systemd/system/
+sudo cp robot-push.service /etc/systemd/system/
+sudo nano /etc/systemd/system/robot-server.service   # แก้ ROBOT_PASS
+sudo nano /etc/systemd/system/robot-push.service     # แก้ IP และโทเคน
+sudo systemctl daemon-reload
+sudo systemctl enable --now robot-server robot-push</code></pre>
+      <pre><code>systemctl status robot-server
+journalctl -u robot-push -f</code></pre>
+    </li>
+
+    <li>
+      <h3>ทดสอบว่ารอดจากการรีบูต</h3>
+      <pre><code>sudo reboot</code></pre>
+      <p>พอกลับมา เปิด <code>http://raspberrypi.local:9000</code> ในวง
+         ต้องขึ้นหน้าคุมหุ่นเอง โดยไม่ต้อง ssh เข้าไปสั่งอะไร</p>
+    </li>
+  </ol>
+</section>
+
+<section id="esp" class="e">
+  <div class="mach"><span class="tag">เครื่องที่ 3</span><h2>ESP32-S3</h2></div>
+  <p class="what">ตัวนี้ไม่เกี่ยวกับระบบมิเตอร์เลย มันรับคำสั่งจาก Pi ทางสาย USB
+    แล้วขับมอเตอร์ ไม่ต่อเน็ต ไม่มีอะไรต้องตั้งค่า แฟลชครั้งเดียวจบ</p>
+
+  <ol class="steps">
+    <li>
+      <h3>เปิด main.cpp ใน Arduino IDE</h3>
+      <p>เลือกบอร์ดให้ตรงรุ่น ESP32-S3 ที่ใช้ แล้วเลือกพอร์ตที่เสียบอยู่</p>
+    </li>
+    <li>
+      <h3>แฟลชลงบอร์ด</h3>
+      <p class="note warn"><b>ต้องเป็น main.cpp ตัวใหม่</b> ตัวที่มีคำสั่ง
+        <code>X</code> สำหรับหยุดฉุกเฉิน ถ้าใช้ตัวเก่า กด ZL+ZR แล้ว<b>ล้อจะหยุดแต่แปรงยังหมุนอยู่</b>
+        ซึ่งอันตรายกว่าล้อ เพราะมือเข้าไปติดได้</p>
+    </li>
+    <li>
+      <h3>เสียบสาย USB เข้า Pi</h3>
+      <p>เปิดหน้าคุมหุ่นดู ถ้าขึ้น <code>ยังไม่เชื่อมกับ ESP32 — ตรวจสาย USB</code>
+         ให้เช็คสายกับไฟเลี้ยง ไม่ต้องไปยุ่งกับโค้ด</p>
+    </li>
+  </ol>
+</section>
+
+<section id="test">
+  <div class="mach"><h2>ทดสอบทั้งเส้น</h2></div>
+  <p class="what">ทำครบทุกข้อก่อนแจกรหัสให้ลูกบ้าน ถ้าข้อไหนไม่ผ่านให้หยุดแก้ตรงนั้นก่อน</p>
+  <ul class="check" id="chk">
+    <li><input type="checkbox"><span>เปิดลิงก์เว็บจากมือถือที่ปิด WiFi แล้วขึ้นหน้าล็อกอินลูกบ้าน</span></li>
+    <li><input type="checkbox"><span>ล็อกอินเจ้าของหอที่ทางเข้าลับได้ และเพิ่มห้องจริงได้ 2 ห้อง พร้อมจดรหัสที่ระบบให้มา</span></li>
+    <li><input type="checkbox"><span>กดปุ่ม "คุมหุ่น" ในเว็บเจ้าของหอแล้วเห็นภาพสดจากกล้อง</span></li>
+    <li><input type="checkbox"><span>กดชัตเตอร์แล้วกล่องถามเลขห้องเด้งขึ้นมา กรอกห้องแรก เลือกน้ำ กดถ่าย</span></li>
+    <li><input type="checkbox"><span>กดชัตเตอร์อีกครั้ง ค่าห้องเดิมยังค้างอยู่ เปลี่ยนเป็นไฟแล้วถ่าย</span></li>
+    <li><input type="checkbox"><span>กลับมาหน้าเจ้าของหอ รอไม่เกิน 20 วินาที รูปเข้าห้องนั้นเอง</span></li>
+    <li><input type="checkbox"><span>พิมพ์เลขที่อ่านได้ใต้รูป กดบันทึก จุดข้างเลขห้องเปลี่ยนเป็นทึบ</span></li>
+    <li><input type="checkbox"><span>เปิดเว็บจากมือถืออีกเครื่อง ล็อกอินด้วยเลขห้อง+รหัสลูกบ้าน เห็นเลขและรูปของห้องตัวเอง</span></li>
+    <li><input type="checkbox"><span>ลองล็อกอินห้องหนึ่ง แล้วเปิดรูปของอีกห้อง ต้องเข้าไม่ได้</span></li>
+    <li><input type="checkbox"><span>กด ZL+ZR บนจอยพร้อมกัน ล้อหยุดและแปรงดับพร้อมกัน</span></li>
+    <li><input type="checkbox"><span>ถอดปลั๊กเราเตอร์ 1 นาทีแล้วเสียบกลับ ระบบกลับมาเองทั้งสองเครื่อง</span></li>
+  </ul>
+  <p class="note">ผ่านครบ 11 ข้อแล้วค่อยเพิ่มห้องที่เหลือ รหัสของแต่ละห้องแสดงครั้งเดียว
+    จดใส่กระดาษแล้วส่งให้เจ้าของห้องโดยตรง อย่าส่งในไลน์กลุ่มหอ</p>
+</section>
+
+<section id="trouble">
+  <div class="mach"><h2>แก้ปัญหา</h2></div>
+  <table>
+    <tr><th>อาการ</th><th>สาเหตุที่พบบ่อย</th></tr>
+    <tr><td><code>ModuleNotFoundError: pages</code></td>
+      <td><code>pages.py</code> ไม่ได้อยู่โฟลเดอร์เดียวกับ <code>hub.py</code></td></tr>
+    <tr><td>หน้าเว็บว่าง ไม่มีรูปสักใบ</td>
+      <td>Pi ยังไม่ได้รัน push.py ดู <code>journalctl -u robot-push -f</code></td></tr>
+    <tr><td><code>คลังปฏิเสธ (403)</code></td>
+      <td>โทเคนสองฝั่งไม่ตรงกัน</td></tr>
+    <tr><td>รูปเข้ากล่อง "ยังไม่ได้ระบุห้อง" หมด</td>
+      <td>ตอนถ่ายไม่ได้ใส่เลขห้อง หรือใส่เลขห้องที่ยังไม่ได้เพิ่มในระบบ</td></tr>
+    <tr><td>กดคุมหุ่นแล้วขึ้น "ต่อหุ่นไม่ได้"</td>
+      <td>หุ่นปิดอยู่ หรือ <code>--robot</code> ชี้ผิดที่</td></tr>
+    <tr><td>คุมหุ่นได้แต่ภาพไม่ขึ้น</td>
+      <td><code>--robot-pass</code> ไม่ตรงกับ <code>ROBOT_PASS</code> บน Pi</td></tr>
+    <tr><td>ลูกบ้านเข้าไม่ได้</td>
+      <td>รหัสแสดงครั้งเดียวตอนสร้าง หายแล้วกด "ตั้งรหัสใหม่"</td></tr>
+    <tr><td>จอยไม่ทำงาน</td>
+      <td>ยังไม่ได้ลง <code>python3-evdev</code> หรือจอยยังไม่ได้เปิดโหมด Xbox (A + Home)</td></tr>
+    <tr><td>ฟอนต์ไทยไม่สวย</td>
+      <td>เครื่องโหลดฟอนต์จาก Google ไม่ได้ ระบบจะถอยไปใช้ฟอนต์ของเครื่องเอง</td></tr>
+  </table>
+
+  <p class="note"><b>สำรองข้อมูล</b> คัดลอกทั้งโฟลเดอร์ <code>~/meterhub</code> ไปไว้ที่อื่น
+    สัปดาห์ละครั้ง ข้างในมีรูปและเลขมิเตอร์ย้อนหลังทั้งหมด หายแล้วหายเลย
+    ไม่มีฐานข้อมูล เป็นไฟล์ธรรมดา ย้ายเครื่องก็แค่คัดลอกโฟลเดอร์นี้ไปวาง</p>
+</section>
+
+<footer>
+  ระบบนี้ยังไม่คิดเงินและยังไม่ออกใบแจ้งหนี้ มีแค่เลขมิเตอร์กับหน่วยที่ใช้
+  และยังต้องคีย์เลขเอง การอ่านเลขอัตโนมัติด้วยชิป Hailo เป็นงานถัดไป
+</footer>
+
+</div>
+<script>
+// ปุ่มคัดลอก — ติดตั้งจริงคือการพิมพ์คำสั่งยาว ๆ บนมือถือ ซึ่งพิมพ์ผิดง่ายมาก
+document.querySelectorAll('pre').forEach(pre=>{
+  const b=document.createElement('button');
+  b.className='cp'; b.textContent='คัดลอก';
+  b.onclick=async()=>{
+    try{
+      await navigator.clipboard.writeText(pre.querySelector('code').innerText);
+      b.textContent='คัดลอกแล้ว'; b.classList.add('done');
+    }catch(e){ b.textContent='คัดลอกไม่ได้'; }
+    setTimeout(()=>{b.textContent='คัดลอก';b.classList.remove('done');},1800);
+  };
+  pre.appendChild(b);
+});
+
+// ติ๊กรายการทดสอบ — อยู่ในหน่วยความจำอย่างเดียว ปิดหน้าแล้วเริ่มใหม่
+document.querySelectorAll('#chk li').forEach(li=>{
+  const cb=li.querySelector('input');
+  cb.onchange=()=>li.classList.toggle('done',cb.checked);
+});
+</script>
+</body></html>
