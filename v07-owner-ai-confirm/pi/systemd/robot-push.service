@@ -1,0 +1,20 @@
+[Unit]
+Description=ส่งรูปมิเตอร์จากหุ่นขึ้นเซิร์ฟเวอร์
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=pi
+WorkingDirectory=/home/pi/server
+# แก้ IP ให้เป็นเครื่องที่รัน hub.py และโทเคนให้ตรงกับฝั่งนั้น
+ExecStart=/usr/bin/python3 /home/pi/server/push.py \
+    --to http://192.168.1.50:8080 \
+    --token robot-push-change-me \
+    --dir /home/pi/robot_photos \
+    --every 20
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
