@@ -1,0 +1,622 @@
+<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"></head><body><title>เทียบระบบภาพสดหุ่นมิเตอร์</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anuphan:wght@400;600&family=Chakra+Petch:wght@600&family=IBM+Plex+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: one reading column (≈70ch) with wide figures breaking out to 1040px; schematic/datasheet feel */
+:root{
+  --bg:#f3f5f2; --surface:#ffffff; --ink:#18201c; --muted:#56615a; --line:#c6cec7;
+  --accent:#1c5bc8; --accent-soft:#e2ebfb; --warn:#a8530f; --warn-soft:#fbeadb;
+  --good:#1f7a48; --good-soft:#e1f2e8; --soft:#6b7a72;
+  --f-display:"Chakra Petch", "Anuphan", system-ui, sans-serif;
+  --f-body:"Anuphan", "Noto Sans Thai", system-ui, sans-serif;
+  --f-mono:"IBM Plex Mono", ui-monospace, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f1311; --surface:#171d1a; --ink:#e3e9e5; --muted:#9aa69e; --line:#34403a;
+  --accent:#7aa9ff; --accent-soft:#18284a; --warn:#f2a35d; --warn-soft:#3a2613;
+  --good:#6fcf98; --good-soft:#15301f; --soft:#93a29a; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f1311; --surface:#171d1a; --ink:#e3e9e5; --muted:#9aa69e; --line:#34403a;
+  --accent:#7aa9ff; --accent-soft:#18284a; --warn:#f2a35d; --warn-soft:#3a2613;
+  --good:#6fcf98; --good-soft:#15301f; --soft:#93a29a; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.7;
+  padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px))}
+main{max-width:1040px;margin:0 auto;padding-block:40px 80px}
+.col{max-width:720px}
+h1,h2,h3{font-family:var(--f-display);line-height:1.25;text-wrap:balance;margin:0}
+h1{font-size:clamp(28px,4.4vw,44px);font-weight:600;letter-spacing:-.01em}
+h2{font-size:clamp(21px,2.6vw,27px);font-weight:600;margin-top:64px;padding-top:18px;border-top:2px solid var(--ink)}
+h3{font-size:18px;font-weight:600;margin-top:28px}
+p{margin:12px 0}
+.eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.lead{font-size:18px;color:var(--ink);max-width:720px}
+.muted{color:var(--muted)}
+code,.mono{font-family:var(--f-mono);font-size:.88em}
+code{background:var(--accent-soft);padding:1px 5px;border-radius:4px;overflow-wrap:anywhere}
+pre{font-family:var(--f-mono);font-size:13px;background:var(--surface);border:1px solid var(--line);
+  border-radius:8px;padding:12px 14px;overflow-x:auto;line-height:1.55}
+pre code{background:none;padding:0}
+a{color:var(--accent);text-underline-offset:2px}
+.verdict{margin-top:28px;border:2px solid var(--accent);border-radius:10px;background:var(--surface);padding:18px 20px;max-width:820px}
+.verdict .k{font-family:var(--f-mono);font-size:12px;letter-spacing:.08em;color:var(--accent);text-transform:uppercase}
+.verdict p{margin:8px 0}
+.verdict strong{font-family:var(--f-display);font-weight:600;font-size:19px}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:16px}
+.fact{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px 14px;min-width:0}
+.fact .n{font-family:var(--f-mono);font-size:20px;font-weight:600}
+.fact .l{font-size:14px;color:var(--muted);line-height:1.5}
+figure{margin:22px 0 0}
+.scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+svg.arch{display:block;width:100%;min-width:860px;height:auto;color:var(--ink);
+  background:var(--surface);border:1px solid var(--line);border-radius:10px}
+figcaption{font-size:14px;color:var(--muted);margin-top:8px;max-width:760px}
+.bx{fill:var(--surface);stroke:var(--ink);stroke-width:1.2}
+.bx.warn{fill:var(--warn-soft);stroke:var(--warn)}
+.bx.good{fill:var(--good-soft);stroke:var(--good);stroke-width:1.6}
+.bx.soft{fill:var(--surface);stroke:var(--soft);stroke-dasharray:5 3}
+.bx.cloud{fill:var(--accent-soft);stroke:var(--accent)}
+.bx.dash{stroke-dasharray:5 3}
+.t1{font-family:var(--f-body);font-size:12.5px;font-weight:600;fill:var(--ink)}
+.t2{font-family:var(--f-body);font-size:11px;fill:var(--muted)}
+.ar{stroke:var(--ink);stroke-width:1.3;fill:none}
+.ar.warn{stroke:var(--warn);stroke-width:1.6}
+.ar.good{stroke:var(--good);stroke-width:2.2}
+.ar.soft{stroke:var(--soft);stroke-dasharray:5 3}
+.ar.dash{stroke-dasharray:5 3}
+.mk{fill:var(--ink)} .mk.warn{fill:var(--warn)} .mk.good{fill:var(--good)} .mk.soft{fill:var(--soft)}
+.al{font-family:var(--f-mono);font-size:10.5px;fill:var(--muted)}
+.al.warn{fill:var(--warn)} .al.good{fill:var(--good);font-weight:600}
+.bd{stroke:var(--line);stroke-width:1.2;stroke-dasharray:3 4}
+.bdl{font-family:var(--f-mono);font-size:10px;fill:var(--muted)}
+.lh{font-family:var(--f-mono);font-size:10.5px;letter-spacing:.08em;fill:var(--muted)}
+.badge{fill:var(--warn)} .badget{font-family:var(--f-mono);font-size:11px;font-weight:700;fill:var(--surface)}
+.notes{list-style:none;padding:0;margin:12px 0 0;display:grid;gap:6px;max-width:820px}
+.notes li{display:grid;grid-template-columns:24px 1fr;gap:8px;font-size:15px;line-height:1.6}
+.notes .b{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--warn);
+  color:var(--surface);font-family:var(--f-mono);font-size:11px;font-weight:700;margin-top:3px}
+.tbl{overflow-x:auto;margin-top:14px;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:14px;line-height:1.55}
+th,td{text-align:left;vertical-align:top;padding:9px 12px;border-bottom:1px solid var(--line)}
+th{font-family:var(--f-display);font-weight:600;font-size:14px;background:var(--bg);position:sticky;top:0}
+tr:last-child td{border-bottom:0}
+td:first-child{font-weight:600;white-space:nowrap}
+table.cmp{min-width:860px}
+td.rec{background:var(--accent-soft)}
+.num{font-family:var(--f-mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+.tag{display:inline-block;font-family:var(--f-mono);font-size:11px;padding:1px 7px;border-radius:99px;border:1px solid currentColor;margin-left:4px;white-space:nowrap}
+.tag.w{color:var(--warn)} .tag.g{color:var(--good)} .tag.a{color:var(--accent)}
+.opts{display:grid;gap:16px;margin-top:16px}
+.opt{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px 18px;min-width:0}
+.opt.pick{border:2px solid var(--accent)}
+.opt h3{margin-top:0}
+.opt .cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin-top:8px}
+.opt .cols h4{font-family:var(--f-mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;margin:0 0 4px;color:var(--muted)}
+.opt ul,.opt ol{margin:0;padding-left:20px;font-size:15px}
+.opt li{margin:3px 0}
+svg.bars{display:block;width:100%;min-width:640px;height:auto;background:var(--surface);border:1px solid var(--line);border-radius:10px}
+.bl1{font-family:var(--f-body);font-size:13px;font-weight:600;fill:var(--ink)}
+.bl2{font-family:var(--f-mono);font-size:11px;fill:var(--muted)}
+.bv{font-family:var(--f-mono);font-size:12px;fill:var(--ink)}
+.bar{fill:var(--soft)} .bar.rec{fill:var(--accent)} .bar.assumed{fill:var(--surface);stroke:var(--soft);stroke-dasharray:4 3}
+.grid{stroke:var(--line);stroke-width:1}
+.tick{font-family:var(--f-mono);font-size:11px;fill:var(--muted)}
+.bars g:hover .bar{opacity:.8}
+.src{font-size:14px;color:var(--muted)} .src li{margin:4px 0;overflow-wrap:anywhere}
+@media (max-width:560px){ td:first-child{white-space:normal} }
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+</style>
+<main>
+<div class="eyebrow">PiVistation 5 + ESP32-S3 · หุ่นจดมิเตอร์หอพัก · 15 ต.ค. 2569</div>
+<h1>ภาพสดของหุ่น: สามระบบ เลือกทางไหน</h1>
+<p class="lead">เทียบระบบกล้องและภาพสดสามแบบ ได้แก่ ระบบเดิมของเรา, <code>raspberry_pi</code> (WebRTC + เว็บแคม Logitech) และ <code>robot-update</code> (PiVistation 5 ชุดเดียวกับเรา) โดยอ่านจากโค้ดจริงทุกบรรทัดที่เกี่ยวกับกล้อง การส่งภาพ และการขับ แล้ววัดผลเป็นตัวเลขในเครื่องทดสอบ</p>
+
+<div class="verdict">
+  <div class="k">ข้อสรุป</div>
+  <p><strong>ใช้ระบบของเราเป็นฐานต่อ แล้วเปิดวิดีโอ WebRTC แบบที่ raspberry_pi ใช้</strong></p>
+  <p>ส่วนนี้เขียนเสร็จและผ่านการทดสอบในเครื่องจำลองแล้ว เหลือติดตั้งลงหุ่น ไม่ควรย้ายไปใช้ระบบของคนอื่นทั้งระบบ เพราะทั้งสองระบบจะทำให้เสียภาพนิ่ง 64MP การขับผ่านเว็บพร้อมจอย แขน pan และเว็บ hub ไป ส่วน robot-update มีของดีที่ควรยืมมาทีหลังสามอย่าง: AI แนะนำเลขมิเตอร์, ขั้นตอนบันทึกค่าแบบชนิด→ห้อง→ค่า, และการถ่ายภาพแบบไม่หยุดภาพสด</p>
+</div>
+
+<h2>อุปกรณ์ที่ใช้จริง</h2>
+<div class="col">
+<p>ทั้งสามระบบต้องรันบนฮาร์ดแวร์ชุดนี้ ข้อจำกัดของฮาร์ดแวร์จึงเป็นตัวตัดสินหลายเรื่อง</p>
+</div>
+<div class="facts">
+  <div class="fact"><div class="n">Pi 5 · 4GB</div><div class="l">ไม่มีชิปเข้ารหัส H.264 แบบฮาร์ดแวร์ (Raspberry Pi ยืนยันในเอกสารทางการ) วิดีโอ H.264 ต้องใช้ซีพียู</div></div>
+  <div class="fact"><div class="n">64MP Hawkeye</div><div class="l">กล้อง Arducam โฟกัส PDAF+CDAF หุ่นรายงานขนาดภาพนิ่ง 9248×6944 · โหมดวิดีโอ 1080p ทำได้ถึง 45 fps</div></div>
+  <div class="fact"><div class="n">Hailo-8L · 13 TOPS</div><div class="l">ตัวเร่ง AI ที่มากับชุด ยังไม่มีระบบไหนในสามระบบใช้เลย</div></div>
+  <div class="fact"><div class="n">ESP32-S3 · USB</div><div class="l">ของเราคุยแบบ <code>#M,ซ้าย,ขวา</code> (บอร์ดยังเป็น v8 ตามบันทึก v9 รอแฟลช) ต่างจาก robot-update ที่คุยเป็น JSON</div></div>
+  <div class="fact"><div class="n">hotspot มือถือ</div><div class="l">วัดจริง: ก่อนปรับ ping จาก Pi ไปมือถือหาย 47–73% (ปิดทุกโปรแกรมแล้วยังหาย 53%) หลังปรับ hotspot เหลือ 0%</div></div>
+</div>
+
+<h2>สถาปัตยกรรมทั้งสี่แบบ</h2>
+<div class="col">
+<p>ทุกรูปวาดผังเดียวกัน: ซ้ายคืออุปกรณ์ กลางคือโปรแกรมบน Pi ขวาคือสิ่งที่อยู่นอก Pi เส้นประแนวตั้งคือจุดที่ข้อมูลออกจากเครื่องไปทางเครือข่าย กล่องส้มคือจุดอ่อน กล่องเขียวคือจุดที่ทำให้ลื่น วงกลมเลขอธิบายอยู่ใต้รูป</p>
+</div>
+
+<h3>ก. ระบบเดิมของเรา (ตอนเริ่ม เช้า 15 ต.ค.)</h3>
+<figure><div class="scroll"><svg class="arch" viewBox="0 0 1000 342" role="img" aria-label="ระบบเดิมตอนเริ่ม: ภาพสด MJPEG แบบดันต่อเนื่องผ่าน TCP, คำสั่งขับเป็น HTTP ทุก 120 ms, ภาพนิ่ง 64MP สลับโหมดกล้อง"><defs>
+<marker id="ah-n" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk"/></marker>
+<marker id="as-n" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk"/></marker>
+<marker id="ah-good" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk good"/></marker>
+<marker id="ah-warn" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk warn"/></marker>
+<marker id="ah-soft" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk soft"/></marker>
+</defs><text class="lh" x="65.0" y="14" text-anchor="middle">อุปกรณ์</text>
+<text class="lh" x="440.0" y="14" text-anchor="middle">บน Pi</text>
+<text class="lh" x="810.0" y="14" text-anchor="middle">ตัวกลาง</text>
+<text class="lh" x="945.0" y="14" text-anchor="middle">ผู้ใช้</text>
+<line class="bd" x1="740" y1="38" x2="740" y2="336"/><text class="bdl" x="740" y="32" text-anchor="middle">Wi-Fi</text>
+<line class="bd" x1="875" y1="38" x2="875" y2="336"/><text class="bdl" x="875" y="32" text-anchor="middle">LAN/Tailscale/Funnel</text>
+<rect class="bx" x="365" y="23.0" width="150" height="34" rx="6"/>
+<text class="t1" x="440.0" y="44.0" text-anchor="middle">จอย USB (evdev)</text>
+<line class="ar" x1="440.0" y1="57" x2="440.0" y2="82" marker-end="url(#ah-n)"/>
+<rect class="bx" x="10" y="84.0" width="110" height="56" rx="6"/>
+<text class="t1" x="65.0" y="108.5" text-anchor="middle">ESP32-S3</text>
+<text class="t2" x="65.0" y="123.5" text-anchor="middle">ล้อ · แปรง · แขน</text>
+<rect class="bx" x="170" y="84.0" width="150" height="56" rx="6"/>
+<text class="t1" x="245.0" y="108.5" text-anchor="middle">RobotLink</text>
+<text class="t2" x="245.0" y="123.5" text-anchor="middle">USB serial 115200</text>
+<rect class="bx" x="365" y="84.0" width="150" height="56" rx="6"/>
+<text class="t1" x="440.0" y="108.5" text-anchor="middle">DriveMux 20 Hz</text>
+<text class="t2" x="440.0" y="123.5" text-anchor="middle">รวมจอย + เว็บ</text>
+<rect class="bx warn" x="560" y="84.0" width="150" height="56" rx="6"/>
+<text class="t1" x="635.0" y="108.5" text-anchor="middle">HTTP GET /drive</text>
+<text class="t2" x="635.0" y="123.5" text-anchor="middle">ยิงทุก 120 ms</text>
+<circle class="badge" cx="706" cy="88.0" r="9"/><text class="badget" x="706" y="92.0" text-anchor="middle">2</text>
+<rect class="bx" x="770" y="84.0" width="80" height="56" rx="6"/>
+<text class="t1" x="810.0" y="108.5" text-anchor="middle">hub</text>
+<text class="t2" x="810.0" y="123.5" text-anchor="middle">ส่งต่อ</text>
+<rect class="bx" x="900" y="84.0" width="90" height="146.0" rx="6"/>
+<text class="t1" x="945.0" y="153.5" text-anchor="middle">เบราว์เซอร์</text>
+<text class="t2" x="945.0" y="168.5" text-anchor="middle">&lt;img&gt; + ปุ่ม</text>
+<line class="ar" x1="168" y1="112" x2="124" y2="112" marker-end="url(#ah-n)"/><text class="al " x="146.0" y="106.0" text-anchor="middle">#M/#S</text>
+<line class="ar" x1="363" y1="112" x2="324" y2="112" marker-end="url(#ah-n)"/>
+<line class="ar" x1="558" y1="112" x2="519" y2="112" marker-end="url(#ah-n)"/>
+<line class="ar warn" x1="768" y1="112" x2="714" y2="112" marker-end="url(#ah-warn)"/><text class="al warn" x="741.0" y="106.0" text-anchor="middle">TCP</text>
+<line class="ar" x1="898" y1="112" x2="854" y2="112" marker-end="url(#ah-n)"/>
+<rect class="bx" x="10" y="174.0" width="110" height="56" rx="6"/>
+<text class="t1" x="65.0" y="198.5" text-anchor="middle">กล้อง 64MP</text>
+<text class="t2" x="65.0" y="213.5" text-anchor="middle">Hawkeye</text>
+<rect class="bx" x="170" y="174.0" width="150" height="56" rx="6"/>
+<text class="t1" x="245.0" y="198.5" text-anchor="middle">picamera2</text>
+<text class="t2" x="245.0" y="213.5" text-anchor="middle">1280×720 · 12 fps</text>
+<rect class="bx" x="365" y="174.0" width="150" height="56" rx="6"/>
+<text class="t1" x="440.0" y="198.5" text-anchor="middle">JPEG ด้วยซีพียู</text>
+<text class="t2" x="440.0" y="213.5" text-anchor="middle">q75 ≈ 90 KB/ใบ</text>
+<rect class="bx warn" x="560" y="174.0" width="150" height="56" rx="6"/>
+<text class="t1" x="635.0" y="198.5" text-anchor="middle">/stream MJPEG</text>
+<text class="t2" x="635.0" y="213.5" text-anchor="middle">ดันเฟรมไม่หยุด</text>
+<circle class="badge" cx="706" cy="178.0" r="9"/><text class="badget" x="706" y="182.0" text-anchor="middle">1</text>
+<rect class="bx" x="770" y="174.0" width="80" height="56" rx="6"/>
+<text class="t1" x="810.0" y="198.5" text-anchor="middle">hub</text>
+<text class="t2" x="810.0" y="213.5" text-anchor="middle">ส่งต่อ</text>
+<line class="ar" x1="122" y1="202" x2="166" y2="202" marker-end="url(#ah-n)"/>
+<line class="ar" x1="322" y1="202" x2="361" y2="202" marker-end="url(#ah-n)"/>
+<line class="ar" x1="517" y1="202" x2="556" y2="202" marker-end="url(#ah-n)"/>
+<line class="ar warn" x1="712" y1="202" x2="766" y2="202" marker-end="url(#ah-warn)"/><text class="al warn" x="739.0" y="196.0" text-anchor="middle">TCP</text>
+<line class="ar warn" x1="852" y1="202" x2="896" y2="202" marker-end="url(#ah-warn)"/><text class="al warn" x="874.0" y="196.0" text-anchor="middle">TCP</text>
+<line class="ar" x1="245.0" y1="232" x2="245.0" y2="260" marker-end="url(#ah-n)"/>
+<rect class="bx warn" x="170" y="264.0" width="150" height="56" rx="6"/>
+<text class="t1" x="245.0" y="288.5" text-anchor="middle">ภาพนิ่ง 64MP</text>
+<text class="t2" x="245.0" y="303.5" text-anchor="middle">ภาพสดหยุด 1–3 วิ</text>
+<circle class="badge" cx="316" cy="268.0" r="9"/><text class="badget" x="316" y="272.0" text-anchor="middle">3</text>
+<rect class="bx" x="365" y="264.0" width="150" height="56" rx="6"/>
+<text class="t1" x="440.0" y="288.5" text-anchor="middle">คลังรูปบน Pi</text>
+<text class="t2" x="440.0" y="303.5" text-anchor="middle">~/robot_photos</text>
+<rect class="bx" x="560" y="264.0" width="150" height="56" rx="6"/>
+<text class="t1" x="635.0" y="288.5" text-anchor="middle">push.py</text>
+<text class="t2" x="635.0" y="303.5" text-anchor="middle">ส่งทุก 20 วิ</text>
+<rect class="bx" x="770" y="264.0" width="80" height="56" rx="6"/>
+<text class="t1" x="810.0" y="288.5" text-anchor="middle">hub</text>
+<text class="t2" x="810.0" y="303.5" text-anchor="middle">คลังรูป</text>
+<line class="ar" x1="322" y1="292" x2="361" y2="292" marker-end="url(#ah-n)"/>
+<line class="ar" x1="517" y1="292" x2="556" y2="292" marker-end="url(#ah-n)"/>
+<line class="ar" x1="712" y1="292" x2="766" y2="292" marker-end="url(#ah-n)"/><text class="al " x="739.0" y="286.0" text-anchor="middle">HTTP</text></svg></div><figcaption>ภาพสดเดินทางเป็น JPEG ทีละใบแบบดันต่อเนื่องผ่าน TCP ทุกคำสั่งเป็นคำขอ HTTP ใหม่ กล้องตรึงที่ 12 fps บัฟเฟอร์ 2 ใบ ลด noise แบบ HighQuality ภาพนิ่งได้ 64MP แต่ภาพสดหยุดระหว่างถ่าย</figcaption></figure><ul class="notes"><li><span class="b">1</span><span>เน็ตช้าเมื่อไหร่ เฟรมไปกองอยู่ในท่อที่ Pi มองไม่เห็น ภาพตามหลังความจริงหลายวินาที และถ้าแพ็กเก็ตหาย TCP ต้องหยุดรอส่งซ้ำ</span></li><li><span class="b">2</span><span>http.server ส่งหัวกับเนื้อความแยกกัน (Nagle) วัดได้ว่าทุกคำขอโดนหน่วง 44 ms คงที่ บน Windows ถึง 200 ms และหน้าเว็บยิง /drive ทุก 120 ms กับ /status ทุก 250 ms โดยไม่รอคำตอบ คำขอจึงซ้อนกันจนเต็ม</span></li><li><span class="b">3</span><span>ต้องหยุดสตรีมแล้วสลับเป็นโหมดภาพนิ่งเต็มเซนเซอร์ ภาพสดจึงค้าง 1–3 วินาทีทุกครั้งที่กดถ่าย</span></li></ul>
+
+<h3>ข. raspberry_pi (WebRTC + เว็บแคม Logitech)</h3>
+<figure><div class="scroll"><svg class="arch" viewBox="0 0 1000 342" role="img" aria-label="ระบบ raspberry_pi: เว็บแคม USB แปลงเป็น H.264 ส่งผ่าน MediaMTX เป็น WebRTC (UDP), ภาพถ่ายดึงจากวิดีโอแล้วครอป, Pi ไม่ได้ขับหุ่น"><defs>
+<marker id="ah-n" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk"/></marker>
+<marker id="as-n" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk"/></marker>
+<marker id="ah-good" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk good"/></marker>
+<marker id="ah-warn" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk warn"/></marker>
+<marker id="ah-soft" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk soft"/></marker>
+</defs><text class="lh" x="65.0" y="14" text-anchor="middle">อุปกรณ์</text>
+<text class="lh" x="440.0" y="14" text-anchor="middle">บน Pi</text>
+<text class="lh" x="810.0" y="14" text-anchor="middle">ตัวกลาง</text>
+<text class="lh" x="945.0" y="14" text-anchor="middle">ผู้ใช้</text>
+<line class="bd" x1="740" y1="38" x2="740" y2="336"/><text class="bdl" x="740" y="32" text-anchor="middle">LAN / Tailscale</text>
+<line class="bd" x1="875" y1="38" x2="875" y2="336"/><text class="bdl" x="875" y="32" text-anchor="middle">อินเทอร์เน็ต</text>
+<rect class="bx" x="10" y="84.0" width="110" height="56" rx="6"/>
+<text class="t1" x="65.0" y="108.5" text-anchor="middle">ESP32</text>
+<text class="t2" x="65.0" y="123.5" text-anchor="middle">คุมมอเตอร์เอง</text>
+<rect class="bx warn" x="170" y="84.0" width="150" height="56" rx="6"/>
+<text class="t1" x="245.0" y="108.5" text-anchor="middle">ControllerServer</text>
+<text class="t2" x="245.0" y="123.5" text-anchor="middle">ตอบ OK เท่านั้น</text>
+<circle class="badge" cx="316" cy="88.0" r="9"/><text class="badget" x="316" y="92.0" text-anchor="middle">3</text>
+<line class="ar" x1="122" y1="104" x2="166" y2="104" marker-end="url(#ah-n)"/><text class="al " x="144.0" y="98.0" text-anchor="middle">PI_CMD</text>
+<line class="ar" x1="168" y1="120" x2="124" y2="120" marker-end="url(#ah-n)"/><text class="al " x="146.0" y="138.0" text-anchor="middle">OK</text>
+<rect class="bx" x="10" y="174.0" width="110" height="56" rx="6"/>
+<text class="t1" x="65.0" y="198.5" text-anchor="middle">Logitech Brio</text>
+<text class="t2" x="65.0" y="213.5" text-anchor="middle">USB · MJPEG</text>
+<rect class="bx  dash" x="170" y="174.0" width="150" height="56" rx="6"/>
+<text class="t1" x="245.0" y="198.5" text-anchor="middle">ffmpeg → H.264</text>
+<text class="t2" x="245.0" y="213.5" text-anchor="middle">(เดาจากโค้ด)</text>
+<circle class="badge" cx="316" cy="178.0" r="9"/><text class="badget" x="316" y="182.0" text-anchor="middle">1</text>
+<rect class="bx" x="365" y="174.0" width="150" height="56" rx="6"/>
+<text class="t1" x="440.0" y="198.5" text-anchor="middle">MediaMTX</text>
+<text class="t2" x="440.0" y="213.5" text-anchor="middle">RTSP :8554</text>
+<rect class="bx good" x="560" y="174.0" width="150" height="56" rx="6"/>
+<text class="t1" x="635.0" y="198.5" text-anchor="middle">MediaMTX</text>
+<text class="t2" x="635.0" y="213.5" text-anchor="middle">WebRTC :8889</text>
+<rect class="bx" x="900" y="174.0" width="90" height="56" rx="6"/>
+<text class="t1" x="945.0" y="198.5" text-anchor="middle">เบราว์เซอร์</text>
+<text class="t2" x="945.0" y="213.5" text-anchor="middle">iframe :8889</text>
+<line class="ar" x1="122" y1="202" x2="166" y2="202" marker-end="url(#ah-n)"/>
+<line class="ar  dash" x1="322" y1="202" x2="361" y2="202" marker-end="url(#ah-n)"/>
+<line class="ar" x1="517" y1="202" x2="556" y2="202" marker-end="url(#ah-n)"/>
+<line class="ar good" x1="712" y1="202" x2="896" y2="202" marker-end="url(#ah-good)"/><text class="al good" x="804.0" y="196.0" text-anchor="middle">UDP (WebRTC)</text>
+<line class="ar  dash" x1="440.0" y1="232" x2="440.0" y2="260" marker-end="url(#ah-n)"/>
+<rect class="bx" x="170" y="264.0" width="150" height="56" rx="6"/>
+<text class="t1" x="245.0" y="288.5" text-anchor="middle">Flask :5000</text>
+<text class="t2" x="245.0" y="303.5" text-anchor="middle">หน้าเว็บ + /capture</text>
+<rect class="bx" x="365" y="264.0" width="150" height="56" rx="6"/>
+<text class="t1" x="440.0" y="288.5" text-anchor="middle">Camera (OpenCV)</text>
+<text class="t2" x="440.0" y="303.5" text-anchor="middle">อ่าน RTSP · ถอดภาพ</text>
+<rect class="bx warn" x="560" y="264.0" width="150" height="56" rx="6"/>
+<text class="t1" x="635.0" y="288.5" text-anchor="middle">ครอปซูม 1–4×</text>
+<text class="t2" x="635.0" y="303.5" text-anchor="middle">JPEG q90</text>
+<circle class="badge" cx="706" cy="268.0" r="9"/><text class="badget" x="706" y="272.0" text-anchor="middle">2</text>
+<rect class="bx cloud" x="770" y="264.0" width="80" height="56" rx="6"/>
+<text class="t1" x="810.0" y="288.5" text-anchor="middle">Google</text>
+<text class="t2" x="810.0" y="303.5" text-anchor="middle">Drive+Sheets</text>
+<line class="ar" x1="322" y1="292" x2="361" y2="292" marker-end="url(#ah-n)"/><text class="al " x="341.5" y="286.0" text-anchor="middle">ขอภาพ</text>
+<line class="ar" x1="517" y1="292" x2="556" y2="292" marker-end="url(#ah-n)"/>
+<line class="ar" x1="712" y1="292" x2="766" y2="292" marker-end="url(#ah-n)"/><text class="al " x="739.0" y="286.0" text-anchor="middle">อัปโหลด</text></svg></div><figcaption>จุดแข็งเดียวที่ชัดคือภาพสดวิ่งเป็นวิดีโอ H.264 ผ่าน WebRTC บน UDP ใช้เน็ตน้อยและไม่ค้างเวลาแพ็กเก็ตหาย ระบบนี้ทำหน้าที่ถ่ายรูปแล้วส่งขึ้น Google Drive เป็นหลัก</figcaption></figure><ul class="notes"><li><span class="b">1</span><span>ใน zip ไม่มีไฟล์ตั้งค่า MediaMTX ส่วนนี้จึงอนุมานจากโค้ด: หน้าเว็บเปิด iframe ไปที่ :8889/robot และกล้องอ่านจาก CAMERA_RTSP_URL ได้ เว็บแคม Brio ส่ง H.264 เองไม่ได้ (มีแค่ MJPEG/YUY2/NV12) จึงต้องมีตัวแปลง เช่น ffmpeg ตามคู่มือ MediaMTX ถ้าเป็น Pi 5 ก็ต้องใช้ซีพียูแปลงเหมือนกัน</span></li><li><span class="b">2</span><span>ภาพที่ถ่ายคือเฟรมจากวิดีโอที่ถูกบีบอัดแล้ว แล้วครอปตรงกลางเพื่อซูม ซูม 4× เหลือพิกเซลจริงแค่หนึ่งในสิบหก รูปที่อัปขึ้น Drive ถูกตั้งให้ใครมีลิงก์ก็เปิดได้</span></li><li><span class="b">3</span><span>ESP32 ส่ง PI_CMD DRIVE มาให้ Pi แต่ Pi แค่ตรวจรูปแบบแล้วตอบ OK ไม่ได้สั่งมอเตอร์ และหน้าเว็บไม่มีปุ่มขับเลย ระบบนี้จึงไม่ได้ออกแบบมาให้ขับหุ่นผ่านภาพสด</span></li></ul>
+
+<h3>ค. robot-update (PiVistation 5 ชุดเดียวกับเรา)</h3>
+<figure><div class="scroll"><svg class="arch" viewBox="0 0 1000 342" role="img" aria-label="ระบบ robot-update: ภาพสด JPEG เล็กขอทีละใบผ่าน TCP, คำสั่งขับ JSON ทาง WebSocket, ถ่ายรูป 1280×960 จากสตรีมหลักโดยภาพสดไม่หยุด"><defs>
+<marker id="ah-n" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk"/></marker>
+<marker id="as-n" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk"/></marker>
+<marker id="ah-good" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk good"/></marker>
+<marker id="ah-warn" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk warn"/></marker>
+<marker id="ah-soft" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk soft"/></marker>
+</defs><text class="lh" x="65.0" y="14" text-anchor="middle">อุปกรณ์</text>
+<text class="lh" x="440.0" y="14" text-anchor="middle">บน Pi</text>
+<text class="lh" x="810.0" y="14" text-anchor="middle">ตัวกลาง</text>
+<text class="lh" x="945.0" y="14" text-anchor="middle">ผู้ใช้</text>
+<line class="bd" x1="740" y1="38" x2="740" y2="336"/><text class="bdl" x="740" y="32" text-anchor="middle">วงเดียวกันเท่านั้น</text>
+<line class="bd" x1="875" y1="38" x2="875" y2="336"/><text class="bdl" x="875" y="32" text-anchor="middle">อินเทอร์เน็ต</text>
+<rect class="bx" x="10" y="84.0" width="110" height="56" rx="6"/>
+<text class="t1" x="65.0" y="108.5" text-anchor="middle">ESP32</text>
+<text class="t2" x="65.0" y="123.5" text-anchor="middle">เฟิร์มแวร์ JSON</text>
+<rect class="bx warn" x="170" y="84.0" width="150" height="56" rx="6"/>
+<text class="t1" x="245.0" y="108.5" text-anchor="middle">SerialBridge</text>
+<text class="t2" x="245.0" y="123.5" text-anchor="middle">JSON ต่อบรรทัด</text>
+<circle class="badge" cx="316" cy="88.0" r="9"/><text class="badget" x="316" y="92.0" text-anchor="middle">3</text>
+<rect class="bx" x="365" y="84.0" width="150" height="56" rx="6"/>
+<text class="t1" x="440.0" y="108.5" text-anchor="middle">RobotBridge</text>
+<text class="t2" x="440.0" y="123.5" text-anchor="middle">คุมได้คนเดียว</text>
+<rect class="bx warn" x="560" y="84.0" width="150" height="56" rx="6"/>
+<text class="t1" x="635.0" y="108.5" text-anchor="middle">WebSocket :8765</text>
+<text class="t2" x="635.0" y="123.5" text-anchor="middle">ทุก 100 ms</text>
+<circle class="badge" cx="706" cy="88.0" r="9"/><text class="badget" x="706" y="92.0" text-anchor="middle">2</text>
+<rect class="bx" x="900" y="84.0" width="90" height="146.0" rx="6"/>
+<text class="t1" x="945.0" y="153.5" text-anchor="middle">เบราว์เซอร์</text>
+<text class="t2" x="945.0" y="168.5" text-anchor="middle">คีย์บอร์ด + &lt;img&gt;</text>
+<line class="ar" x1="168" y1="112" x2="124" y2="112" marker-end="url(#ah-n)"/><text class="al " x="146.0" y="106.0" text-anchor="middle">JSON</text>
+<line class="ar" x1="363" y1="112" x2="324" y2="112" marker-end="url(#ah-n)"/>
+<line class="ar" x1="558" y1="112" x2="519" y2="112" marker-end="url(#ah-n)"/>
+<line class="ar" x1="898" y1="112" x2="714" y2="112" marker-end="url(#ah-n)"/><text class="al " x="806.0" y="106.0" text-anchor="middle">WS (TCP)</text>
+<rect class="bx" x="10" y="174.0" width="110" height="56" rx="6"/>
+<text class="t1" x="65.0" y="198.5" text-anchor="middle">กล้อง 64MP</text>
+<text class="t2" x="65.0" y="213.5" text-anchor="middle">Hawkeye</text>
+<rect class="bx" x="170" y="174.0" width="150" height="56" rx="6"/>
+<text class="t1" x="245.0" y="198.5" text-anchor="middle">picamera2</text>
+<text class="t2" x="245.0" y="213.5" text-anchor="middle">lores 640×480</text>
+<rect class="bx" x="365" y="174.0" width="150" height="56" rx="6"/>
+<text class="t1" x="440.0" y="198.5" text-anchor="middle">FrameGrabber</text>
+<text class="t2" x="440.0" y="213.5" text-anchor="middle">อ่านทุกเฟรม</text>
+<rect class="bx" x="560" y="174.0" width="150" height="56" rx="6"/>
+<text class="t1" x="635.0" y="198.5" text-anchor="middle">/api/frame.jpg</text>
+<text class="t2" x="635.0" y="213.5" text-anchor="middle">ย่อ 480 + JPEG q70</text>
+<circle class="badge" cx="706" cy="178.0" r="9"/><text class="badget" x="706" y="182.0" text-anchor="middle">1</text>
+<line class="ar" x1="122" y1="202" x2="166" y2="202" marker-end="url(#ah-n)"/>
+<line class="ar" x1="322" y1="202" x2="361" y2="202" marker-end="url(#ah-n)"/>
+<line class="ar" x1="517" y1="202" x2="556" y2="202" marker-end="url(#ah-n)"/>
+<line class="ar" x1="712" y1="202" x2="896" y2="202" marker-end="url(#ah-n)"/><text class="al " x="804.0" y="196.0" text-anchor="middle">ขอทีละใบ (TCP)</text>
+<line class="ar" x1="245.0" y1="232" x2="245.0" y2="260" marker-end="url(#ah-n)"/>
+<rect class="bx good" x="170" y="264.0" width="150" height="56" rx="6"/>
+<text class="t1" x="245.0" y="288.5" text-anchor="middle">main 1280×960</text>
+<text class="t2" x="245.0" y="303.5" text-anchor="middle">ถ่ายได้ ภาพไม่หยุด</text>
+<rect class="bx" x="365" y="264.0" width="150" height="56" rx="6"/>
+<text class="t1" x="440.0" y="288.5" text-anchor="middle">AI อ่านเลข</text>
+<text class="t2" x="440.0" y="303.5" text-anchor="middle">ONNX บนซีพียู</text>
+<rect class="bx" x="560" y="264.0" width="150" height="56" rx="6"/>
+<text class="t1" x="635.0" y="288.5" text-anchor="middle">ชนิด → ห้อง → ค่า</text>
+<text class="t2" x="635.0" y="303.5" text-anchor="middle">Outbox SQLite</text>
+<rect class="bx cloud" x="770" y="264.0" width="80" height="56" rx="6"/>
+<text class="t1" x="810.0" y="288.5" text-anchor="middle">Cloud</text>
+<text class="t2" x="810.0" y="303.5" text-anchor="middle">หอพัก</text>
+<line class="ar" x1="322" y1="292" x2="361" y2="292" marker-end="url(#ah-n)"/>
+<line class="ar" x1="517" y1="292" x2="556" y2="292" marker-end="url(#ah-n)"/>
+<line class="ar" x1="712" y1="292" x2="766" y2="292" marker-end="url(#ah-n)"/><text class="al " x="739.0" y="286.0" text-anchor="middle">ทุก 5 วิ</text></svg></div><figcaption>ตั้งกล้องสองสตรีม (main 1280×960 + lores 640×480) ภาพสดใช้ lores ย่อเหลือกว้าง 480 แล้วให้หน้าเว็บขอทีละใบ ถ่ายรูปจาก main ได้ทันทีโดยภาพสดไม่หยุด คำสั่งขับแยกไปอยู่ที่ WebSocket พอร์ต 8765</figcaption></figure><ul class="notes"><li><span class="b">1</span><span>หน้าเว็บขอใบใหม่หลังใบเก่าขึ้นจอแล้ว วิธีนี้เหมือน /frame ที่เราเคยใช้ ภาพไม่สะสม แต่ทุกใบต้องรอรอบไปกลับหนึ่งรอบ ระบบนี้ดูลื่นบน hotspot เพราะภาพเล็กมาก (กว้าง 480 จาก 64MP) แลกกับรายละเอียด และเข้ารหัส JPEG ใหม่ทุกคำขอ ถ้ามีหลายคนดูก็เข้ารหัสซ้ำหลายรอบ</span></li><li><span class="b">2</span><span>ไม่มีรหัสผ่านทั้งหน้าเว็บและ WebSocket ใครอยู่วงเดียวกันขับหุ่นได้ และพอร์ต 8765 แยกจากหน้าเว็บ ถ้าจะส่งต่อผ่าน hub หรือ Funnel ต้องเขียนเพิ่ม</span></li><li><span class="b">3</span><span>คุยกับ ESP32 เป็น JSON (เดินหน้า/ถอย/ซ้าย/ขวาแบบเปิด-ปิด + tilt + blower) ใช้กับเฟิร์มแวร์ v9 ของเราไม่ได้ และไม่มีความเร็วอนาล็อก แขน pan หรือจอย</span></li></ul>
+
+<h3>ง. ที่แนะนำ: ระบบเดิม + วิดีโอ WebRTC (เขียนเสร็จแล้ว)</h3>
+<figure><div class="scroll"><svg class="arch" viewBox="0 0 1000 432" role="img" aria-label="ระบบที่แนะนำ: server.py คุมกล้องเหมือนเดิม ส่งวิดีโอ H.264 ผ่าน MediaMTX เป็น WebRTC (UDP) และมี JPEG ทาง WebSocket เป็นทางสำรอง คำสั่งขับวิ่งในสาย WebSocket"><defs>
+<marker id="ah-n" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk"/></marker>
+<marker id="as-n" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk"/></marker>
+<marker id="ah-good" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk good"/></marker>
+<marker id="ah-warn" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk warn"/></marker>
+<marker id="ah-soft" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk soft"/></marker>
+</defs><text class="lh" x="65.0" y="14" text-anchor="middle">อุปกรณ์</text>
+<text class="lh" x="440.0" y="14" text-anchor="middle">บน Pi</text>
+<text class="lh" x="810.0" y="14" text-anchor="middle">ตัวกลาง</text>
+<text class="lh" x="945.0" y="14" text-anchor="middle">ผู้ใช้</text>
+<line class="bd" x1="740" y1="38" x2="740" y2="426"/><text class="bdl" x="740" y="32" text-anchor="middle">Wi-Fi</text>
+<line class="bd" x1="875" y1="38" x2="875" y2="426"/><text class="bdl" x="875" y="32" text-anchor="middle">LAN/Tailscale/Funnel</text>
+<rect class="bx" x="365" y="23.0" width="150" height="34" rx="6"/>
+<text class="t1" x="440.0" y="44.0" text-anchor="middle">จอย USB (evdev)</text>
+<line class="ar" x1="440.0" y1="57" x2="440.0" y2="82" marker-end="url(#ah-n)"/>
+<rect class="bx" x="10" y="84.0" width="110" height="56" rx="6"/>
+<text class="t1" x="65.0" y="108.5" text-anchor="middle">ESP32-S3</text>
+<text class="t2" x="65.0" y="123.5" text-anchor="middle">เฟิร์มแวร์ของเรา</text>
+<rect class="bx" x="170" y="84.0" width="150" height="56" rx="6"/>
+<text class="t1" x="245.0" y="108.5" text-anchor="middle">RobotLink</text>
+<text class="t2" x="245.0" y="123.5" text-anchor="middle">#M · #S 20 Hz</text>
+<rect class="bx" x="365" y="84.0" width="150" height="56" rx="6"/>
+<text class="t1" x="440.0" y="108.5" text-anchor="middle">DriveMux</text>
+<text class="t2" x="440.0" y="123.5" text-anchor="middle">รวมจอย + เว็บ</text>
+<rect class="bx good" x="560" y="84.0" width="150" height="56" rx="6"/>
+<text class="t1" x="635.0" y="108.5" text-anchor="middle">/ws คำสั่งขับ</text>
+<text class="t2" x="635.0" y="123.5" text-anchor="middle">สายเดียวกับภาพ</text>
+<rect class="bx" x="770" y="84.0" width="80" height="56" rx="6"/>
+<text class="t1" x="810.0" y="108.5" text-anchor="middle">hub</text>
+<text class="t2" x="810.0" y="123.5" text-anchor="middle">ส่งต่อ</text>
+<rect class="bx" x="900" y="84.0" width="90" height="236.0" rx="6"/>
+<text class="t1" x="945.0" y="198.5" text-anchor="middle">เบราว์เซอร์</text>
+<text class="t2" x="945.0" y="213.5" text-anchor="middle">&lt;video&gt; / &lt;img&gt;</text>
+<line class="ar" x1="168" y1="112" x2="124" y2="112" marker-end="url(#ah-n)"/><text class="al " x="146.0" y="106.0" text-anchor="middle">#M/#S</text>
+<line class="ar" x1="363" y1="112" x2="324" y2="112" marker-end="url(#ah-n)"/>
+<line class="ar" x1="558" y1="112" x2="519" y2="112" marker-end="url(#ah-n)"/>
+<line class="ar" x1="768" y1="112" x2="714" y2="112" marker-end="url(#ah-n)"/><text class="al " x="741.0" y="106.0" text-anchor="middle">TCP</text>
+<line class="ar" x1="898" y1="112" x2="854" y2="112" marker-end="url(#ah-n)"/>
+<rect class="bx" x="10" y="174.0" width="110" height="56" rx="6"/>
+<text class="t1" x="65.0" y="198.5" text-anchor="middle">กล้อง 64MP</text>
+<text class="t2" x="65.0" y="213.5" text-anchor="middle">Hawkeye</text>
+<rect class="bx" x="170" y="174.0" width="150" height="56" rx="6"/>
+<text class="t1" x="245.0" y="198.5" text-anchor="middle">picamera2</text>
+<text class="t2" x="245.0" y="213.5" text-anchor="middle">main 720p + lores 480p</text>
+<rect class="bx good" x="365" y="174.0" width="150" height="56" rx="6"/>
+<text class="t1" x="440.0" y="198.5" text-anchor="middle">H.264 ด้วยซีพียู</text>
+<text class="t2" x="440.0" y="213.5" text-anchor="middle">zerolatency 2 Mbit/s</text>
+<rect class="bx good" x="560" y="174.0" width="150" height="56" rx="6"/>
+<text class="t1" x="635.0" y="198.5" text-anchor="middle">MediaMTX</text>
+<text class="t2" x="635.0" y="213.5" text-anchor="middle">ฟังแค่ในเครื่อง</text>
+<line class="ar" x1="122" y1="202" x2="166" y2="202" marker-end="url(#ah-n)"/>
+<line class="ar good" x1="322" y1="202" x2="361" y2="202" marker-end="url(#ah-good)"/><text class="al good" x="341.5" y="196.0" text-anchor="middle">main</text>
+<line class="ar good" x1="517" y1="202" x2="556" y2="202" marker-end="url(#ah-good)"/><text class="al good" x="536.5" y="196.0" text-anchor="middle">RTSP</text>
+<line class="ar good" x1="712" y1="202" x2="896" y2="202" marker-end="url(#ah-good)"/><text class="al good" x="804.0" y="196.0" text-anchor="middle">UDP 8189 (WebRTC)</text>
+<text class="al" x="805.0" y="220" text-anchor="middle">เปิดสายผ่าน /whep (ตรวจรหัส)</text>
+<path class="ar soft" d="M322,218 L342,218 L342,292 L361,292" fill="none" marker-end="url(#ah-soft)"/><text class="al soft" x="334" y="262" text-anchor="end">lores</text>
+<rect class="bx soft" x="365" y="264.0" width="150" height="56" rx="6"/>
+<text class="t1" x="440.0" y="288.5" text-anchor="middle">JPEG q65</text>
+<text class="t2" x="440.0" y="303.5" text-anchor="middle">ทางสำรอง</text>
+<rect class="bx soft" x="560" y="264.0" width="150" height="56" rx="6"/>
+<text class="t1" x="635.0" y="288.5" text-anchor="middle">/ws ดันล่าสุด</text>
+<text class="t2" x="635.0" y="303.5" text-anchor="middle">ค้างท่อ ≤ 2–3 ใบ</text>
+<rect class="bx soft" x="770" y="264.0" width="80" height="56" rx="6"/>
+<text class="t1" x="810.0" y="288.5" text-anchor="middle">hub</text>
+<text class="t2" x="810.0" y="303.5" text-anchor="middle">Funnel</text>
+<line class="ar soft" x1="517" y1="292" x2="556" y2="292" marker-end="url(#ah-soft)"/>
+<line class="ar soft" x1="712" y1="292" x2="766" y2="292" marker-end="url(#ah-soft)"/><text class="al soft" x="739.0" y="286.0" text-anchor="middle">TCP</text>
+<line class="ar soft" x1="852" y1="292" x2="896" y2="292" marker-end="url(#ah-soft)"/>
+<line class="ar" x1="245.0" y1="232" x2="245.0" y2="350" marker-end="url(#ah-n)"/>
+<rect class="bx warn" x="170" y="354.0" width="150" height="56" rx="6"/>
+<text class="t1" x="245.0" y="378.5" text-anchor="middle">ภาพนิ่ง 64MP</text>
+<text class="t2" x="245.0" y="393.5" text-anchor="middle">ยังหยุด 1–3 วิ</text>
+<circle class="badge" cx="316" cy="358.0" r="9"/><text class="badget" x="316" y="362.0" text-anchor="middle">1</text>
+<rect class="bx" x="365" y="354.0" width="150" height="56" rx="6"/>
+<text class="t1" x="440.0" y="378.5" text-anchor="middle">คลังรูปบน Pi</text>
+<text class="t2" x="440.0" y="393.5" text-anchor="middle">~/robot_photos</text>
+<rect class="bx" x="560" y="354.0" width="150" height="56" rx="6"/>
+<text class="t1" x="635.0" y="378.5" text-anchor="middle">push.py</text>
+<text class="t2" x="635.0" y="393.5" text-anchor="middle">ชะลอเมื่อมีคนดู</text>
+<rect class="bx" x="770" y="354.0" width="80" height="56" rx="6"/>
+<text class="t1" x="810.0" y="378.5" text-anchor="middle">hub</text>
+<text class="t2" x="810.0" y="393.5" text-anchor="middle">คลังรูป</text>
+<line class="ar" x1="322" y1="382" x2="361" y2="382" marker-end="url(#ah-n)"/>
+<line class="ar" x1="517" y1="382" x2="556" y2="382" marker-end="url(#ah-n)"/>
+<line class="ar" x1="712" y1="382" x2="766" y2="382" marker-end="url(#ah-n)"/><text class="al " x="739.0" y="376.0" text-anchor="middle">HTTP</text></svg></div><figcaption>server.py ยังคุมกล้องเอง (ซูม โฟกัส ภาพนิ่ง 64MP ใช้ได้ครบ) กล้องให้สองสตรีมจาก ISP: main 1280×720 เข้ารหัส H.264 ส่งให้ MediaMTX กระจายเป็น WebRTC บน UDP ส่วน lores เป็น JPEG ทางสำรองผ่าน WebSocket ที่ดันใบล่าสุดและค้างท่อได้ไม่เกิน 2–3 ใบ คำสั่งขับวิ่งในสาย WebSocket เดียวกัน</figcaption></figure><ul class="notes"><li><span class="b">1</span><span>ภาพนิ่ง 64MP ยังต้องสลับโหมด ภาพหยุด 1–3 วิเหมือนเดิม และวิดีโอต้องเปิดสายใหม่หลังถ่าย ระหว่างนั้นหน้าเว็บสลับไปใช้ JPEG ให้เองแล้วกลับมาเป็นวิดีโอเอง ถ้าจะเลี่ยง ทำปุ่ม 'ถ่ายเร็ว' จากสตรีมหลัก 1280×720 แบบที่ robot-update ทำได้ (ภาพเล็กกว่า แต่ไม่หยุด)</span></li></ul>
+
+<h2>ตัวเลขที่วัดได้</h2>
+<div class="col">
+<p>สร้างคลิปทดสอบ 8 วินาที 25 fps จากภาพมิเตอร์จริงในชุดทดสอบของ robot-update วางบนผนังที่มีลวดลาย เติม noise แบบเซนเซอร์ แล้วเลื่อนภาพเหมือนหุ่นหมุนตัว จากนั้นเข้ารหัสด้วยค่าที่แต่ละระบบใช้ แล้ววัดว่าต้องใช้เน็ตเท่าไหร่ และภาพที่ได้เหมือนต้นฉบับแค่ไหน (SSIM ยิ่งใกล้ 1 ยิ่งเหมือน ทุกแบบถูกขยายกลับเป็น 1280×720 ก่อนเทียบ ภาพที่ย่อเล็กจึงเสียคะแนนตามรายละเอียดที่หายไปจริง)</p>
+</div>
+<figure><div class="scroll"><svg class="bars" viewBox="0 0 900 350" role="img" aria-label="แบนด์วิดท์ที่ภาพสดแต่ละแบบต้องใช้ (Mbit/s) พร้อมค่าความเหมือนต้นฉบับ SSIM">
+<text class="tick" x="300" y="20">Mbit/s ที่ต้องใช้ (ยิ่งสั้นยิ่งทนเน็ตแย่)</text>
+<text class="tick" x="880" y="20" text-anchor="end">SSIM</text>
+<line class="grid" x1="300.0" y1="34" x2="300.0" y2="322"/>
+<text class="tick" x="300.0" y="338" text-anchor="middle">0</text>
+<line class="grid" x1="398.0" y1="34" x2="398.0" y2="322"/>
+<text class="tick" x="398.0" y="338" text-anchor="middle">2</text>
+<line class="grid" x1="496.0" y1="34" x2="496.0" y2="322"/>
+<text class="tick" x="496.0" y="338" text-anchor="middle">4</text>
+<line class="grid" x1="594.0" y1="34" x2="594.0" y2="322"/>
+<text class="tick" x="594.0" y="338" text-anchor="middle">6</text>
+<line class="grid" x1="692.0" y1="34" x2="692.0" y2="322"/>
+<text class="tick" x="692.0" y="338" text-anchor="middle">8</text>
+<line class="grid" x1="790.0" y1="34" x2="790.0" y2="322"/>
+<text class="tick" x="790.0" y="338" text-anchor="middle">10</text>
+<g><title>ระบบเดิม (เริ่มต้น) — JPEG 1280×720 q75 · 12 fps: 8.62 Mbit/s, SSIM 0.961</title>
+<text class="bl1" x="0" y="55">ระบบเดิม (เริ่มต้น)</text>
+<text class="bl2" x="0" y="71">JPEG 1280×720 q75 · 12 fps</text>
+<rect class="bar " x="300" y="46" width="422.4" height="22" rx="4"/>
+<text class="bv" x="730.4" y="62">8.62</text>
+<text class="bv" x="880" y="62" text-anchor="end">0.961</text>
+</g>
+<g><title>ระบบเดิม (แก้ 15 ต.ค.) — JPEG 854×480 q65 · 20 fps: 5.39 Mbit/s, SSIM 0.944</title>
+<text class="bl1" x="0" y="101">ระบบเดิม (แก้ 15 ต.ค.)</text>
+<text class="bl2" x="0" y="117">JPEG 854×480 q65 · 20 fps</text>
+<rect class="bar " x="300" y="92" width="264.1" height="22" rx="4"/>
+<text class="bv" x="572.1" y="108">5.39</text>
+<text class="bv" x="880" y="108" text-anchor="end">0.944</text>
+</g>
+<g><title>robot-update — JPEG กว้าง 480 q70 · 15 fps: 1.90 Mbit/s, SSIM 0.922</title>
+<text class="bl1" x="0" y="147">robot-update</text>
+<text class="bl2" x="0" y="163">JPEG กว้าง 480 q70 · 15 fps</text>
+<rect class="bar " x="300" y="138" width="93.1" height="22" rx="4"/>
+<text class="bv" x="401.1" y="154">1.90</text>
+<text class="bv" x="880" y="154" text-anchor="end">0.922</text>
+</g>
+<g><title>raspberry_pi (ค่าตัวอย่าง) — H.264 1280×720 · 600 kbit/s: 0.66 Mbit/s, SSIM 0.954</title>
+<text class="bl1" x="0" y="193">raspberry_pi (ค่าตัวอย่าง)</text>
+<text class="bl2" x="0" y="209">H.264 1280×720 · 600 kbit/s</text>
+<rect class="bar assumed" x="300" y="184" width="32.3" height="22" rx="4"/>
+<text class="bv" x="340.3" y="200">0.66</text>
+<text class="bv" x="880" y="200" text-anchor="end">0.954</text>
+</g>
+<g><title>แนะนำ · ประหยัด — H.264 1280×720 · 1 Mbit/s: 1.12 Mbit/s, SSIM 0.960</title>
+<text class="bl1" x="0" y="239">แนะนำ · ประหยัด</text>
+<text class="bl2" x="0" y="255">H.264 1280×720 · 1 Mbit/s</text>
+<rect class="bar rec" x="300" y="230" width="54.9" height="22" rx="4"/>
+<text class="bv" x="362.9" y="246">1.12</text>
+<text class="bv" x="880" y="246" text-anchor="end">0.960</text>
+</g>
+<g><title>แนะนำ · ค่าเริ่มต้น — H.264 1280×720 · 2 Mbit/s: 2.21 Mbit/s, SSIM 0.964</title>
+<text class="bl1" x="0" y="285">แนะนำ · ค่าเริ่มต้น</text>
+<text class="bl2" x="0" y="301">H.264 1280×720 · 2 Mbit/s</text>
+<rect class="bar rec" x="300" y="276" width="108.3" height="22" rx="4"/>
+<text class="bv" x="416.3" y="292">2.21</text>
+<text class="bv" x="880" y="292" text-anchor="end">0.964</text>
+</g>
+</svg></div>
+<figcaption>H.264 ที่ 1 Mbit/s ได้ภาพชัดเท่า JPEG 1280×720 ที่ 8.6 Mbit/s คือใช้เน็ตน้อยกว่าราว 8 เท่าที่ความชัดเท่ากัน · ทำบน x86 ด้วย libjpeg-turbo กับ libx264 ultrafast/zerolatency/baseline (ตัวเข้ารหัสเดียวกับที่ picamera2 ใช้บน Pi 5) · แถว raspberry_pi ใช้บิตเรตตัวอย่างจากคู่มือ MediaMTX เพราะไม่มีไฟล์ตั้งค่าจริง · คลิปทดสอบเป็นภาพ 16:9 แถว robot-update จึงย่อเป็น 480×270 ของจริงเป็น 480×360 ใช้เน็ตมากกว่านี้ราว 1.3 เท่า</figcaption></figure>
+
+<h3>ภาพที่ไปถึงผู้ใช้ ผ่านลิงก์จำลอง</h3>
+<div class="col"><p>ใช้ตัวจำลองลิงก์ (หน่วงเวลา + จำกัดความเร็ว) วิ่งกับ server.py จริงพร้อมกล้องจำลอง เฟรมละ 40 KB ทั้งสองแบบ แบบขอทีละใบเป็นกลไกเดียวกับที่ robot-update ใช้</p></div>
+<div class="tbl"><table>
+<thead><tr><th>ลิงก์</th><th>ขอทีละใบ (/frame, robot-update)</th><th>ดันพร้อมหน้าต่างตอบรับ (/ws)</th></tr></thead>
+<tbody>
+<tr><td>WiFi บ้าน · RTT 10 ms · 20 Mbit/s</td><td class="num">12.1 fps · ภาพอายุ 65 ms</td><td class="num">20.2 fps · 32 ms</td></tr>
+<tr><td>hotspot · RTT 60 ms · 6 Mbit/s</td><td class="num">8.6 fps · 127 ms</td><td class="num">17.2 fps · 106 ms</td></tr>
+<tr><td>Funnel · RTT 160 ms · 6 Mbit/s</td><td class="num">4.6 fps · 176 ms</td><td class="num">9.5 fps (หน้าต่าง 2) · 14 fps (หน้าต่าง 3)</td></tr>
+</tbody></table></div>
+
+<h3>ทำไมหุ่นอยู่ไกลแล้วภาพค้าง: เพดานของ TCP เมื่อแพ็กเก็ตหาย</h3>
+<div class="col"><p>TCP ลดความเร็วลงทุกครั้งที่แพ็กเก็ตหาย ตารางนี้ประมาณเพดานความเร็วด้วยสูตรของ Mathis (MSS 1448 ไบต์) เทียบกับที่ภาพสดต้องใช้ ถ้าเพดานต่ำกว่าที่ต้องใช้ ภาพจะค้างเป็นพัก ๆ ส่วน WebRTC ใช้ UDP จึงไม่มีเพดานแบบนี้ แพ็กเก็ตที่หายทำให้ภาพแตกแค่แวบเดียว และภาพจะคมกลับมาที่ภาพหลักถัดไป (ตั้งไว้ทุก 1 วินาที)</p></div>
+<div class="tbl"><table>
+<thead><tr><th>แพ็กเก็ตหาย</th><th>เพดาน TCP · RTT 30 ms</th><th>เพดาน TCP · RTT 100 ms</th></tr></thead>
+<tbody>
+<tr><td>1%</td><td class="num">4.7 Mbit/s</td><td class="num">1.4 Mbit/s</td></tr>
+<tr><td>5%</td><td class="num">2.1 Mbit/s</td><td class="num">0.6 Mbit/s</td></tr>
+<tr><td>20%</td><td class="num">1.1 Mbit/s</td><td class="num">0.3 Mbit/s</td></tr>
+</tbody></table></div>
+<div class="col"><p class="muted">JPEG 854×480 ต้องใช้ 5.4 Mbit/s จึงเริ่มค้างตั้งแต่หายราว 1% ส่วน robot-update ต้องใช้ 1.9 Mbit/s ทนได้มากกว่าเพราะภาพเล็ก WiFi ส่งซ้ำให้เองในระดับคลื่นวิทยุ แพ็กเก็ตที่หายจริงจึงน้อยกว่าตัวเลขของ ping แต่ที่วัดได้ 47–73% ก่อนปรับ hotspot มากพอที่ภาพจะค้างแน่นอน</p></div>
+
+<h2>เทียบทีละหัวข้อ</h2>
+<div class="tbl"><table class="cmp"><thead><tr><th>หัวข้อ</th><th>ระบบเดิม (เริ่มต้น)</th><th>raspberry_pi</th><th>robot-update</th><th>แนะนำ (เดิม + WebRTC)</th></tr></thead><tbody><tr><td>อุปกรณ์</td><td>PiVistation 5 (Pi 5 + กล้อง 64MP)</td><td>Pi + เว็บแคม Logitech USB</td><td>PiVistation 5 (ชุดเดียวกับเรา)</td><td class="rec">PiVistation 5 (ชุดเดิม)</td></tr><tr><td>ใครคุมกล้อง</td><td>server.py ผ่าน picamera2</td><td>MediaMTX/ffmpeg (เดา) — Flask อ่านต่อทาง RTSP หรือ V4L2</td><td>server.py ผ่าน picamera2</td><td class="rec">server.py ผ่าน picamera2 (เหมือนเดิม)</td></tr><tr><td>ภาพสดเป็นอะไร</td><td>JPEG ทีละใบ (MJPEG)</td><td>วิดีโอ H.264</td><td>JPEG ทีละใบ</td><td class="rec">วิดีโอ H.264 · สำรองเป็น JPEG</td></tr><tr><td>ขนาด / เฟรมเรต</td><td>1280×720 q75 · 12 fps</td><td>ไม่มีไฟล์ตั้งค่าใน zip</td><td>กว้าง 480 q70 · ≤ 15 fps</td><td class="rec">1280×720 2 Mbit/s · 25 fps (สำรอง 848×480 q65)</td></tr><tr><td>วิธีส่ง</td><td>HTTP ดันต่อเนื่อง (TCP)</td><td>WebRTC (UDP)</td><td>HTTP ขอทีละใบ (TCP)</td><td class="rec">WebRTC (UDP) · สำรอง WebSocket (TCP)</td></tr><tr><td>เวลาแพ็กเก็ตหาย</td><td>TCP หยุดรอส่งซ้ำ เฟรมกองในท่อ ภาพตามหลังสะสม</td><td>ภาพแตกแวบเดียวแล้วไปต่อ</td><td>หยุดรอ fps ตก แต่ไม่สะสม</td><td class="rec">ภาพแตกแวบเดียว (ถ้า UDP ใช้ไม่ได้ ใช้ทางสำรองที่ไม่สะสม)</td></tr><tr><td>เน็ตที่ใช้ (วัด)</td><td>8.6 Mbit/s</td><td>≈ 0.6 Mbit/s (ค่าตัวอย่าง)</td><td>1.9–2.5 Mbit/s</td><td class="rec">1.1–2.2 Mbit/s</td></tr><tr><td>ภาพนิ่งมิเตอร์</td><td>64MP สลับโหมด · ภาพสดหยุด 1–3 วิ</td><td>เฟรมจากวิดีโอ ครอปซูม JPEG q90</td><td>1280×960 จากสตรีมหลัก · ไม่หยุด</td><td class="rec">64MP เหมือนเดิม · ยังหยุด 1–3 วิ</td></tr><tr><td>ซูม</td><td>ครอปที่เซนเซอร์ (ScalerCrop) ถึง 8× คมราว 6×</td><td>ครอปภาพ 1–4× (ภาพสดใช้ CSS ขยาย)</td><td>ขยาย 2× เฉพาะรูปที่ถ่าย</td><td class="rec">ครอปที่เซนเซอร์เหมือนเดิม</td></tr><tr><td>โฟกัส</td><td>AF กรอบกลาง · ปรับมือ · สแกนหาจุดคม</td><td>ไม่มี (เว็บแคมจัดการเอง)</td><td>AF ต่อเนื่องอย่างเดียว</td><td class="rec">เหมือนเดิม</td></tr><tr><td>การขับหุ่น</td><td>เว็บ + จอย → #M อนาล็อก 20 Hz</td><td>ไม่มีในโค้ด (Pi แค่ตอบ OK)</td><td>คีย์บอร์ด → JSON ปุ่มเปิด/ปิด 10 Hz</td><td class="rec">เว็บ + จอย → #M ส่งผ่าน WebSocket</td></tr><tr><td>แขนกล้อง</td><td>pan + tilt (#S)</td><td>ไม่มี</td><td>tilt อย่างเดียว</td><td class="rec">pan + tilt</td></tr><tr><td>ระบบหยุดเอง</td><td>ESP32 หยุดล้อถ้าเงียบ 400 ms · ปุ่มหยุดฉุกเฉิน</td><td>—</td><td>คุมได้คนเดียว · หยุดถ้าเงียบ 0.5 วิ</td><td class="rec">เหมือนเดิม</td></tr><tr><td>รหัสผ่าน</td><td>Basic auth + ล็อกอินเจ้าของหอที่ hub</td><td>ไม่มี</td><td>ไม่มี</td><td class="rec">เหมือนเดิม + /whep ต้องผ่านรหัส</td></tr><tr><td>ใช้จากนอกบ้าน</td><td>hub + Tailscale + Funnel</td><td>ต้องส่ง UDP ถึง Pi (Tailscale)</td><td>วงเดียวกันเท่านั้น</td><td class="rec">Tailscale = วิดีโอ · Funnel = JPEG สำรอง</td></tr><tr><td>เก็บข้อมูล</td><td>push.py → hub (เว็บลูกบ้าน/เจ้าของหอ)</td><td>Google Drive + Sheets (ลิงก์รูปเปิดสาธารณะ)</td><td>Outbox SQLite → Cloud API</td><td class="rec">เหมือนเดิม</td></tr><tr><td>อ่านเลขอัตโนมัติ</td><td>ไม่มี</td><td>Tesseract (ตัวเลือก)</td><td>โมเดล ONNX บนซีพียู (แนะนำค่า)</td><td class="rec">ยังไม่มี (ยืมได้)</td></tr><tr><td>ชุดทดสอบ</td><td>regress + hubtest (กล้องจำลอง)</td><td>ไม่มี</td><td>pytest + node test</td><td class="rec">เดิม + livetest + webrtctest</td></tr></tbody></table></div>
+
+<h2>ข้อดีและข้อเสีย</h2>
+<div class="opts">
+<div class="opt"><h3>ก. ระบบเดิมของเรา</h3><div class="cols">
+<div><h4>ข้อดี</h4><ul><li>ภาพนิ่ง 64MP ซูมครอปที่เซนเซอร์ AF กรอบกลาง และสแกนหาจุดคม เหมาะกับการอ่านตัวเลขมิเตอร์ที่สุด</li><li>ขับอนาล็อกผ่านเว็บและจอย แขน pan/tilt เฟิร์มแวร์มีระบบหยุดเอง</li><li>มี hub: เว็บลูกบ้าน/เจ้าของหอ ส่งต่อหน้าคุมหุ่น เก็บรูปแม้ Pi ดับ</li><li>มีรหัสผ่าน และชุดทดสอบที่ไม่ต้องใช้หุ่นจริง</li></ul></div>
+<div><h4>ข้อเสีย</h4><ul><li>ตอนเริ่ม: ภาพสดดันต่อเนื่องจนสะสม, หน่วง 40–200 ms ทุกคำขอ, คำขอซ้อนกัน (แก้แล้ววันนี้)</li><li>JPEG ใช้เน็ตมาก และวิ่งบน TCP: เน็ตแย่ = ค้าง</li><li>ถ่ายภาพนิ่งแล้วภาพหยุด 1–3 วิ</li><li>ไฟล์ server.py ใหญ่ (หน้าเว็บฝังอยู่ในโค้ด)</li></ul></div>
+</div></div>
+<div class="opt"><h3>ข. raspberry_pi</h3><div class="cols">
+<div><h4>ข้อดี</h4><ul><li>วิดีโอ WebRTC บน UDP: ใช้เน็ตน้อย ไม่ค้างเวลาแพ็กเก็ตหาย ตรงกับอาการตอนหุ่นอยู่ไกล</li><li>ใช้ MediaMTX สำเร็จรูป โค้ดเองน้อย</li><li>อัปโหลดอยู่ในเธรดแยก กดถ่ายแล้วไม่ต้องรอ</li></ul></div>
+<div><h4>ข้อเสีย</h4><ul><li>ออกแบบมาสำหรับเว็บแคม USB ไม่ใช่กล้อง CSI 64MP</li><li>ภาพถ่ายมาจากวิดีโอที่ถูกบีบอัดแล้ว ซูมด้วยการครอป ความชัดน้อยกว่ามาก</li><li>ไม่มีการขับหุ่นผ่านเว็บ ไม่มีรหัสผ่าน ถ้า MediaMTX ใช้ค่าเริ่มต้น ใครในวงก็เปิด :8889 ดูได้</li><li>ถ้าจะให้ MediaMTX คุมกล้อง Arducam เอง คู่มือ MediaMTX เตือนว่าอาจต้องคอมไพล์ใหม่กับ libcamera ของ Arducam และจะเสีย picamera2 (ซูม/โฟกัส/ภาพนิ่ง)</li></ul></div>
+</div></div>
+<div class="opt"><h3>ค. robot-update</h3><div class="cols">
+<div><h4>ข้อดี</h4><ul><li>สองสตรีมจาก ISP: ภาพสดเล็ก ถ่ายจาก main ได้โดยภาพสดไม่หยุด</li><li>AI แนะนำเลขมิเตอร์ (ONNX ผ่าน OpenCV) ตั้งเกณฑ์ไว้ที่ 0.6 ทดสอบกับรูปจริง 104 ครั้ง แนะนำ 81 ครั้งและถูกทุกครั้ง</li><li>ขั้นตอนบันทึกค่าดีมาก มีค่าครั้งก่อน เตือนมิเตอร์วนรอบ และ outbox SQLite กันส่งซ้ำด้วย UUID</li><li>โค้ดเล็ก แยกไฟล์ดี มี unit test ทั้ง Python และ JS</li></ul></div>
+<div><h4>ข้อเสีย</h4><ul><li>ภาพสดเล็ก (กว้าง 480) และรอรอบไปกลับทุกใบ ไกลแล้ว fps ตก</li><li>ภาพถ่าย 1280×960 เท่านั้น ห่างจาก 64MP มาก ซูมได้แค่ 2× ด้วย CSS</li><li>โปรโตคอล ESP32 คนละแบบ ไม่มีความเร็วอนาล็อก แขน pan หรือจอย</li><li>ไม่มีรหัสผ่าน ใช้ได้แค่ในวงเดียวกัน ส่งต่อผ่าน hub ไม่ได้ถ้าไม่เขียนเพิ่ม</li></ul></div>
+</div></div>
+</div>
+
+<h2>ถ้าเลือกแต่ละทาง ต้องทำอะไร และเสียอะไร</h2>
+<div class="opts">
+<div class="opt pick"><h3>ทางที่ 1 · ระบบเดิม + WebRTC <span class="tag a">แนะนำ</span></h3><div class="cols">
+<div><h4>ต้องทำ</h4><ol>
+<li>วาง <code>server.py</code> (md5 <code>fa0d4a93…</code>), <code>setup_webrtc.sh</code>, <code>mediamtx.yml</code>, <code>mediamtx.service</code> ลงใน <code>/home/pi/server/</code></li>
+<li>รัน <code>bash setup_webrtc.sh</code> บน Pi (ลง python3-av + MediaMTX v1.9.3 + service)</li>
+<li>ถ้าสคริปต์บอกว่า picamera2 ยังไม่มี <code>PyavOutput</code> ให้ส่งเลขรุ่นมาดูก่อน ห้ามอัปเกรดเอง เพราะอาจทำให้กล้อง Arducam ใช้ไม่ได้</li>
+<li>เปิดหน้าคุมหุ่น แถว "ภาพสดวิ่งทาง" ต้องขึ้น <code>WebRTC (วิดีโอ H.264)</code></li>
+<li>ขับออกไปไกลแบบที่เคยค้าง ถ้ายังสะดุด ลด <code>--h264-kbps 1000</code></li>
+</ol></div>
+<div><h4>เสีย / ต้องรู้</h4><ul>
+<li>ใช้ซีพียูเพิ่มสำหรับ H.264 เอกสาร Raspberry Pi วัดโหมดหน่วงต่ำที่ 1080p30 ได้ 62–90% ของหนึ่งคอร์ ที่ 720p25 ใช้พิกเซลต่อวินาทีราว 37% ของนั้น จึงประมาณได้ราว 23–33% ของหนึ่งคอร์ (ประมาณจากสัดส่วน ไม่ได้วัดบนหุ่น)</li>
+<li>เพิ่ม service MediaMTX และพอร์ต UDP/TCP 8189</li>
+<li>คนเข้าผ่าน Funnel ได้แค่ JPEG สำรอง (UDP ผ่าน Funnel ไม่ได้)</li>
+<li>ไม่เสียความสามารถเดิมเลย ถ้ามีปัญหาปิด MediaMTX แล้วกลับไปใช้ JPEG ได้ทันที</li>
+</ul></div></div></div>
+<div class="opt"><h3>ทางที่ 2 · ย้ายไป robot-update ทั้งระบบ <span class="tag w">ไม่แนะนำ</span></h3><div class="cols">
+<div><h4>ต้องทำ</h4><ol>
+<li>แฟลช ESP32 ใหม่ให้รับ JSON ของ robot-update หรือเขียนตัวแปลงเป็น #M/#S</li>
+<li>เพิ่มแขน pan ความเร็วอนาล็อก จอย แปรงหลายระดับ เข้าไปในโปรโตคอลและหน้าเว็บ</li>
+<li>เพิ่มรหัสผ่าน และทำให้ WebSocket 8765 ผ่าน hub/Funnel ได้</li>
+<li>ต่อ outbox เข้ากับ hub ของเรา (API คนละแบบ)</li>
+<li>ปิด camera-streamer ของ Arducam (setup_pi.sh ของเขาทำให้)</li>
+</ol></div>
+<div><h4>เสีย</h4><ul>
+<li>ภาพนิ่ง 64MP เหลือ 1280×960 (เล็กลงราว 50 เท่า)</li>
+<li>ซูมที่เซนเซอร์ 8× โฟกัสมือ และสแกนโฟกัส</li>
+<li>เว็บลูกบ้าน/เจ้าของหอ เชื่อมกับหุ่นต้องทำใหม่</li>
+<li>ปัญหาหุ่นไกลแล้วค้างก็ยังอยู่ เพราะเป็น TCP ขอทีละใบเหมือนเดิม แค่ภาพเล็กลง</li>
+</ul></div></div></div>
+<div class="opt"><h3>ทางที่ 3 · ย้ายไป raspberry_pi ทั้งระบบ <span class="tag w">ไม่แนะนำ</span></h3><div class="cols">
+<div><h4>ต้องทำ</h4><ol>
+<li>เปลี่ยนแหล่งภาพจากเว็บแคมเป็นกล้อง CSI: ให้ MediaMTX คุมกล้องเอง (rpiCamera ซึ่งอาจต้องคอมไพล์ใหม่กับ libcamera ของ Arducam) หรือเขียนตัวส่งจาก picamera2 ซึ่งก็คือทางที่ 1</li>
+<li>เขียนระบบขับหุ่นผ่านเว็บใหม่ทั้งหมด (ในโค้ดไม่มี)</li>
+<li>ใส่รหัสผ่าน และปิด :8889 ไม่ให้ใครก็ดูได้</li>
+<li>เลือกระหว่าง Google Drive/Sheets กับ hub</li>
+</ol></div>
+<div><h4>เสีย</h4><ul>
+<li>ภาพนิ่ง 64MP ซูม และโฟกัส ถ้าให้ MediaMTX คุมกล้อง (picamera2 เปิดกล้องตัวเดียวกันพร้อมกันไม่ได้)</li>
+<li>การขับ จอย แขน และระบบหยุดเองฝั่ง Pi</li>
+<li>ได้แค่ข้อดีเรื่อง WebRTC ซึ่งทางที่ 1 ได้มาแล้วโดยไม่เสียอะไร</li>
+</ul></div></div></div>
+</div>
+
+<h2>ของที่ควรยืมจาก robot-update ทีหลัง</h2>
+<div class="col"><ol>
+<li><strong>AI แนะนำเลขมิเตอร์</strong> <code>meter_ai/</code>: ใช้ OpenCV + numpy อย่างเดียว ใส่ใน server.py ตอนถ่ายได้ แสดงเป็นค่าแนะนำให้คนกดยืนยัน ภายหลังย้ายไปรันบน Hailo-8L ได้</li>
+<li><strong>ขั้นตอนบันทึกค่าหลังถ่าย</strong>: ชนิด → ห้อง → ค่า โชว์ค่าครั้งก่อน เตือนถ้าน้อยกว่าเดิม (มิเตอร์วนรอบ) ใช้กับกล่องติดป้ายห้องของเราได้ตรง ๆ</li>
+<li><strong>ปุ่ม "ถ่ายเร็ว"</strong>: ดึงภาพจากสตรีมหลักโดยไม่สลับโหมด ภาพสดไม่หยุด เก็บปุ่ม 64MP ไว้ใช้ตอนต้องการความชัดสูงสุด</li>
+<li><strong>คุมได้คนเดียว + หน้าเดิมแย่งคืนได้ทันที</strong> (<code>ControllerLock</code> + <code>?client=</code>) กันคนสองคนขับพร้อมกัน</li>
+</ol></div>
+
+<h2>สิ่งที่ต้องให้คุณทำหรืออนุญาต</h2>
+<div class="col">
+<p>รายงานนี้ทำในเครื่องทดสอบทั้งหมด ไม่ได้แตะ Pi โน้ตบุ๊ก หรือหุ่น ขั้นต่อไปที่ต้องทำบนเครื่องจริงและต้องให้คุณตัดสินใจมีดังนี้</p>
+<div class="tbl"><table>
+<thead><tr><th>งาน</th><th>สิทธิ์ที่ต้องใช้</th><th>ความเสี่ยง</th></tr></thead>
+<tbody>
+<tr><td>รัน setup_webrtc.sh</td><td>sudo บน Pi, ออกเน็ตไป GitHub และ apt</td><td>ต่ำ ปิด MediaMTX แล้วกลับเป็น JPEG ได้</td></tr>
+<tr><td>อัปเกรด python3-picamera2</td><td>sudo apt</td><td>สูง อาจทำให้กล้อง Arducam ใช้ไม่ได้ ทำเมื่อจำเป็นเท่านั้น</td></tr>
+<tr><td>เปิดพอร์ต 8189 (UDP/TCP)</td><td>ไม่ต้องทำอะไร ถ้า Pi ไม่ได้เปิดไฟร์วอลล์</td><td>ต่ำ เป็นท่อวิดีโอที่ต้องเจรจาผ่านรหัสก่อน</td></tr>
+<tr><td>แก้ Funnel (เน็ต AIS ตัดสาย)</td><td>หน้า admin ของ Tailscale</td><td>ไม่กระทบหุ่น</td></tr>
+<tr><td>แฟลช ESP32 (เฉพาะทางที่ 2)</td><td>ถอด robot-server แล้วแฟลช</td><td>สูง ไม่แนะนำ</td></tr>
+</tbody></table></div>
+</div>
+
+<h2>ขีดจำกัดของรายงานนี้</h2>
+<div class="col"><ul>
+<li>ไม่ได้วัดบนหุ่นจริง ตัวเลขทั้งหมดมาจากเครื่องทดสอบ x86 และลิงก์จำลอง ส่วนค่าซีพียูบน Pi 5 ประมาณจากเอกสารของ Raspberry Pi</li>
+<li>ความหน่วงของ WebRTC ตั้งแต่กล้องถึงจอยังไม่ได้วัด ทดสอบแค่ว่าวิดีโอขึ้น เดินต่อเนื่อง และสลับทางสำรองได้ (Chromium + MediaMTX จริง 10/10)</li>
+<li>ส่วน MediaMTX ของ raspberry_pi อนุมานจากโค้ด เพราะไม่มีไฟล์ตั้งค่าใน zip</li>
+<li>คลิปทดสอบเป็นภาพสังเคราะห์ที่มีลายผนังถี่กว่าของจริง ตัวเลขแบนด์วิดท์จึงเป็นกรณีหนัก แต่สัดส่วนระหว่างวิธีเชื่อถือได้</li>
+</ul></div>
+
+<h2>แหล่งอ้างอิง</h2>
+<ul class="src">
+<li>โค้ดที่อ่าน: <code>pi/server.py</code> (GitHub Bhum2005/pi_esp_control_server เช้า 15 ต.ค. และรุ่นปัจจุบัน), <code>robot-update.zip</code> (robot/*.py, static/*.js), <code>raspberry_pi-20261015T111306Z-1-001.zip</code></li>
+<li><a href="https://www.arducam.com/blog/?p=106147">Arducam Pivistation 5 AI Camera, 64MP Pro All-in-one Raspberry Pi 5 AI Camera Kit</a></li>
+<li><a href="https://pip-assets.raspberrypi.com/categories/685-app-notes-guides-whitepapers/documents/RP-010033-WP-1-H.264%20encoding%20performance%20on%20Raspberry%20Pi%205_series%20computers.pdf">Raspberry Pi: H.264 encoding performance on Raspberry Pi 5 series computers (RP-010033)</a></li>
+<li>MediaMTX docs (GitHub bluenviron/mediamtx, 15 ต.ค. 2569): <code>docs/3-publish/14-raspberry-pi-cameras.md</code>, <code>15-generic-webcams.md</code>, <code>mediamtx.yml</code></li>
+<li>picamera2 source (GitHub raspberrypi/picamera2, 12 ต.ค. 2569): <code>encoders/libav_h264_encoder.py</code>, <code>outputs/pyavoutput.py</code>, <code>encoders/jpeg_encoder.py</code></li>
+<li><a href="https://www.mgraves.org/?p=26398">Logitech Brio: รูปแบบภาพที่ส่งได้ (YUY2, NV12, MJPEG ไม่มี H.264)</a></li>
+<li>Mathis et al., "The Macroscopic Behavior of the TCP Congestion Avoidance Algorithm" (1997)</li>
+</ul>
+</main>
+</body></html>

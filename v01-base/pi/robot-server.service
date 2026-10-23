@@ -1,0 +1,23 @@
+[Unit]
+Description=หน้าคุมหุ่นกวาดขยะ (กล้อง จอย เซอร์เรียลไป ESP32)
+After=network.target
+Wants=network.target
+
+[Service]
+Type=simple
+User=pi
+WorkingDirectory=/home/pi/server
+# รหัสเข้าหน้าคุมหุ่น ต้องตรงกับ --robot-pass ที่ตั้งไว้ฝั่ง hub.py
+Environment=ROBOT_USER=admin
+Environment=ROBOT_PASS=เปลี่ยนรหัสตรงนี้
+ExecStart=/usr/bin/python3 /home/pi/server/server.py \
+    --port 9000 \
+    --photos /home/pi/robot_photos
+Restart=always
+RestartSec=5
+
+# กล้องกับจอยต้องรอให้ระบบพร้อมก่อน ไม่งั้นรอบแรกหลังบูตมักหาไม่เจอ
+ExecStartPre=/bin/sleep 8
+
+[Install]
+WantedBy=multi-user.target
